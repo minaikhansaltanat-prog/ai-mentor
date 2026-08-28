@@ -5,6 +5,7 @@ import { hashPassword } from "@/lib/password";
 import { createSession } from "@/lib/auth";
 import { generateJoinCode } from "@/lib/codes";
 import { roleHomePath } from "@/lib/roleHome";
+import { requestChildLink } from "@/lib/parentLink";
 
 const schema = z.object({
   role: z.enum(["STUDENT", "PARENT", "TEACHER", "SCHOOL_ADMIN"]),
@@ -72,10 +73,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (data.role === "PARENT" && data.childPhone) {
-    const child = await db.user.findUnique({ where: { phone: data.childPhone } });
-    if (child && child.role === "STUDENT") {
-      await db.parentLink.create({ data: { parentId: user.id, childId: child.id } }).catch(() => {});
-    }
+    await requestChildLink(user.id, user.name, data.childPhone).catch(() => {});
   }
 
   await createSession({ userId: user.id, role: user.role, name: user.name });

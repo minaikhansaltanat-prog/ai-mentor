@@ -3,7 +3,7 @@ import { getLang } from "@/lib/lang-server";
 import { t } from "@/lib/i18n";
 import { db } from "@/lib/db";
 import { levelFromXp } from "@/lib/gamify";
-import LangToggle from "@/components/LangToggle";
+import Link from "next/link";
 
 const ACHIEVEMENT_PATHS: Record<string, string> = {
   trophy: "M7 4h10v5a5 5 0 01-10 0V4zM7 5H4v2a3 3 0 003 3M17 5h3v2a3 3 0 01-3 3M10 18h4M12 14v4m-3 3h6",
@@ -39,10 +39,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 md:py-10">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display font-bold text-2xl text-ink-900">{tt.profile.title}</h1>
-        <LangToggle lang={lang} label={tt.common.langToggle} />
-      </div>
+      <h1 className="font-display font-bold text-2xl text-ink-900">{tt.profile.title}</h1>
 
       <div className="rounded-3xl bg-gradient-to-br from-gold-500 to-gold-300 p-6 text-ink-900 mt-6">
         <p className="text-xs font-bold opacity-80">
@@ -56,6 +53,14 @@ export default async function ProfilePage() {
           {user.xp} / {nextLevelXp} XP
         </p>
       </div>
+
+      <Link href="/student/works" className="card p-4 mt-5 flex items-center gap-3 hover:shadow-lift transition-shadow">
+        <span className="w-10 h-10 rounded-xl bg-leaf-100 flex items-center justify-center text-leaf-600 shrink-0">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M3 9h18M8 4v5" /></svg>
+        </span>
+        <span className="font-semibold text-ink-800 flex-1">{tt.works.title}</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-ink-300"><path d="M9 6l6 6-6 6" /></svg>
+      </Link>
 
       <p className="text-xs font-bold text-ink-400 mt-8 mb-3 uppercase tracking-wide">{tt.profile.achievements}</p>
 

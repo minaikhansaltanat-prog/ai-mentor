@@ -20,6 +20,18 @@ enum HomeworkState {
   DONE
 }
 
+enum LinkStatus {
+  PENDING
+  APPROVED
+}
+
+enum Visibility {
+  PRIVATE
+  TEACHER
+  CLASS
+  SCHOOL
+}
+
 model School {
   id        String      @id @default(cuid())
   name      String
@@ -28,6 +40,7 @@ model School {
   createdAt DateTime    @default(now())
   users     User[]
   classes   ClassRoom[]
+  materials Material[]
 }
 
 model ClassRoom {
@@ -41,6 +54,7 @@ model ClassRoom {
   teacherId String?
   students  User[]     @relation("StudentClass")
   homework  Homework[]
+  materials Material[]
   createdAt DateTime   @default(now())
 }
 
@@ -57,6 +71,21 @@ model User {
   lastActiveAt DateTime?
   createdAt    DateTime @default(now())
 
+  // profile module (AI_USTAZ_Kabinet_TZ)
+  lastName         String?
+  firstName        String?
+  patronymic       String?
+  birthDate        DateTime?
+  email            String?
+  avatarKey        String?
+  preferredLang    String?
+  notifyPush       Boolean  @default(true)
+  notifyEmail      Boolean  @default(false)
+  favoriteSubjects String[] @default([])
+  teacherVerified  Boolean  @default(false)
+  teacherSubject   String?
+  teacherCategory  String?
+
   school    School?  @relation(fields: [schoolId], references: [id])
   schoolId  String?
 
@@ -72,16 +101,64 @@ model User {
   chatSessions     ChatSession[]
   homeworkStatuses HomeworkStatus[]
   userAchievements UserAchievement[]
+  works            Work[]
+  materials        Material[]
+  notifications    Notification[]
 }
 
 model parentLink {
-  id       String @id @default(cuid())
-  parent   User   @relation("ParentOf", fields: [parentId], references: [id], onDelete: Cascade)
-  parentId String
-  child    User   @relation("ChildOf", fields: [childId], references: [id], onDelete: Cascade)
-  childId  String
+  id        String     @id @default(cuid())
+  parent    User       @relation("ParentOf", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId  String
+  child     User       @relation("ChildOf", fields: [childId], references: [id], onDelete: Cascade)
+  childId   String
+  status    LinkStatus @default(PENDING)
+  createdAt DateTime   @default(now())
 
   @@unique([parentId, childId])
+}
+
+model Work {
+  id         String     @id @default(cuid())
+  student    User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId  String
+  title      String
+  fileKey    String
+  fileType   String
+  visibility Visibility @default(TEACHER)
+  createdAt  DateTime   @default(now())
+}
+
+model Material {
+  id          String      @id @default(cuid())
+  teacher     User        @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId   String
+  school      School?     @relation(fields: [schoolId], references: [id])
+  schoolId    String?
+  classRoom   ClassRoom?  @relation(fields: [classRoomId], references: [id])
+  classRoomId String?
+  subjectCode String?
+  title       String
+  fileKey     String?
+  fileType    String?
+  videoUrl    String?
+  visibility  Visibility  @default(SCHOOL)
+  createdAt   DateTime    @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  type      String
+  titleKk   String
+  titleRu   String
+  bodyKk    String   @default("")
+  bodyRu    String   @default("")
+  linkUrl   String?
+  refId     String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
 
 model Subject {
@@ -162,6 +239,9 @@ model Homework {
   topicId     String?
   titleKk     String
   titleRu     String
+  customQuestionKk String?
+  customQuestionRu String?
+  customAnswer     String?
   dueDate     DateTime
   createdAt   DateTime         @default(now())
   statuses    HomeworkStatus[]

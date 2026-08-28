@@ -24,6 +24,9 @@ export default async function HomeworkPage() {
     dueDate: h.dueDate.toISOString(),
     state: h.statuses[0]?.state ?? "PENDING",
     topicId: h.topicId,
+    customQuestionKk: h.customQuestionKk,
+    customQuestionRu: h.customQuestionRu,
+    hasCustomAnswer: Boolean(h.customAnswer),
   }));
 
   return <HomeworkList lang={lang} items={items} />;

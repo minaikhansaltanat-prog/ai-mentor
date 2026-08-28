@@ -7,6 +7,8 @@ export default async function ClassroomPage() {
   const session = await requireRole("TEACHER");
   const lang = await getLang();
 
+  const teacher = await db.user.findUniqueOrThrow({ where: { id: session.userId } });
+
   const classRoom = await db.classRoom.findFirst({
     where: { teacherId: session.userId },
     include: {
@@ -15,7 +17,7 @@ export default async function ClassroomPage() {
   });
 
   if (!classRoom) {
-    return <ClassroomView lang={lang} classRoom={null} students={[]} topicStats={[]} topics={[]} />;
+    return <ClassroomView lang={lang} verified={teacher.teacherVerified} classRoom={null} students={[]} topicStats={[]} topics={[]} />;
   }
 
   const studentIds = classRoom.students.map((s) => s.id);
@@ -47,6 +49,7 @@ export default async function ClassroomPage() {
   return (
     <ClassroomView
       lang={lang}
+      verified={teacher.teacherVerified}
       classRoom={{ id: classRoom.id, name: classRoom.name, joinCode: classRoom.joinCode }}
       students={students}
       topicStats={topicStats}

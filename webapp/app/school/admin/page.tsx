@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/requireRole";
 import { getLang } from "@/lib/lang-server";
 import { t } from "@/lib/i18n";
 import { db } from "@/lib/db";
+import PendingTeachers from "@/components/PendingTeachers";
 
 export default async function SchoolAdminPage() {
   const session = await requireRole("SCHOOL_ADMIN");
@@ -44,6 +45,11 @@ export default async function SchoolAdminPage() {
     .filter((e) => e.avg < 50)
     .sort((a, b) => a.avg - b.avg);
 
+  const pendingTeachers = await db.user.findMany({
+    where: { role: "TEACHER", schoolId: admin.schoolId, teacherVerified: false },
+    select: { id: true, name: true, phone: true, teacherSubject: true },
+  });
+
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 md:py-10">
       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -71,6 +77,9 @@ export default async function SchoolAdminPage() {
           <p className="text-[11px] text-ink-500">{tt.school.avgProgress}</p>
         </div>
       </div>
+
+      <p className="text-xs font-bold text-ink-400 mt-8 mb-3 uppercase tracking-wide">{tt.school.pendingTeachers}</p>
+      <PendingTeachers lang={lang} items={pendingTeachers} />
 
       <p className="text-xs font-bold text-ink-400 mt-8 mb-3 uppercase tracking-wide">{tt.school.riskZone}</p>
       {riskStudents.length === 0 ? (

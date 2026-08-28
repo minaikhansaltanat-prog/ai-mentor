@@ -2,16 +2,19 @@ import { requireRole } from "@/lib/requireRole";
 import { getLang } from "@/lib/lang-server";
 import { t } from "@/lib/i18n";
 import { db } from "@/lib/db";
+import AddChildForm from "@/components/AddChildForm";
 
 export default async function ParentDashboardPage() {
   const session = await requireRole("PARENT");
   const lang = await getLang();
   const tt = t(lang);
 
-  const links = await db.parentLink.findMany({
+  const allLinks = await db.parentLink.findMany({
     where: { parentId: session.userId },
     include: { child: true },
   });
+  const links = allLinks.filter((l) => l.status === "APPROVED");
+  const pendingLinks = allLinks.filter((l) => l.status === "PENDING");
 
   const children = await Promise.all(
     links.map(async (link) => {
@@ -32,9 +35,21 @@ export default async function ParentDashboardPage() {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 md:py-10">
       <h1 className="font-display font-bold text-2xl text-ink-900">{tt.parent.title}</h1>
 
-      {children.length === 0 ? (
+      {pendingLinks.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {pendingLinks.map((l) => (
+            <span key={l.id} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-gold-100 text-gold-700">
+              {l.child.name} — {tt.parent.pending}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {children.length === 0 && pendingLinks.length === 0 ? (
         <p className="text-ink-400 mt-8">{tt.parent.noChild}</p>
-      ) : (
+      ) : null}
+
+      {children.length > 0 && (
         <div className="mt-6 space-y-5">
           {children.map(({ child, overall, weak, strong, lessonsCount }) => (
             <div key={child.id} className="card p-6">
@@ -86,6 +101,10 @@ export default async function ParentDashboardPage() {
           ))}
         </div>
       )}
+
+      <div className="mt-8">
+        <AddChildForm lang={lang} />
+      </div>
     </div>
   );
 }

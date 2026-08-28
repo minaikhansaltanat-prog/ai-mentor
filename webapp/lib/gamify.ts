@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { notify } from "@/lib/notify";
 
 function isSameDay(a: Date, b: Date) {
   return a.toDateString() === b.toDateString();
@@ -84,6 +85,30 @@ export async function maybeAwardAchievement(userId: string, code: string, condit
   if (already) return;
   await db.userAchievement.create({ data: { userId, achievementId: achievement.id } });
   await db.user.update({ where: { id: userId }, data: { xp: { increment: achievement.xpReward } } });
+
+  await notify({
+    userId,
+    type: "achievement",
+    titleKk: "Жаңа жетістік!",
+    titleRu: "Новое достижение!",
+    bodyKk: achievement.titleKk,
+    bodyRu: achievement.titleRu,
+    linkUrl: "/student/profile",
+  });
+
+  const parentLinks = await db.parentLink.findMany({ where: { childId: userId, status: "APPROVED" } });
+  const child = await db.user.findUnique({ where: { id: userId }, select: { name: true } });
+  for (const link of parentLinks) {
+    await notify({
+      userId: link.parentId,
+      type: "achievement",
+      titleKk: `${child?.name} жаңа жетістікке жетті`,
+      titleRu: `${child?.name} получил(а) новое достижение`,
+      bodyKk: achievement.titleKk,
+      bodyRu: achievement.titleRu,
+      linkUrl: "/parent/dashboard",
+    });
+  }
 }
 
 export function xpForLevel(level: number) {

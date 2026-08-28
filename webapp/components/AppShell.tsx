@@ -35,22 +35,58 @@ function Icon({ name, className }: { name: NavItem["icon"]; className?: string }
   );
 }
 
+function IconButton({ href, label, badge, children }: { href: string; label: string; badge?: number; children: React.ReactNode }) {
+  return (
+    <Link href={href} aria-label={label} className="relative h-10 w-10 rounded-full border border-ink-200 flex items-center justify-center text-ink-600 hover:border-gold-400 hover:text-gold-600 transition-colors shrink-0">
+      {children}
+      {Boolean(badge) && (
+        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+          {badge && badge > 9 ? "9+" : badge}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+function Avatar({ userId, hasAvatar, letter, size = 40 }: { userId: string; hasAvatar: boolean; letter: string; size?: number }) {
+  return (
+    <div
+      className="rounded-full overflow-hidden bg-gold-200 flex items-center justify-center shrink-0 font-display font-bold text-ink-800"
+      style={{ width: size, height: size, fontSize: size * 0.4 }}
+    >
+      {hasAvatar ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={`/api/files/avatar/${userId}`} alt="" className="w-full h-full object-cover" />
+      ) : (
+        letter
+      )}
+    </div>
+  );
+}
+
 export default function AppShell({
   lang,
+  userId,
   name,
+  hasAvatar,
   roleLabel,
   navItems,
+  unreadCount = 0,
   children,
 }: {
   lang: Lang;
+  userId: string;
   name: string;
+  hasAvatar: boolean;
   roleLabel: string;
   navItems: NavItem[];
+  unreadCount?: number;
   children: React.ReactNode;
 }) {
   const tt = t(lang);
   const pathname = usePathname();
   const router = useRouter();
+  const letter = name.trim().charAt(0).toUpperCase() || "?";
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -84,10 +120,23 @@ export default function AppShell({
           })}
         </nav>
         <div className="p-4 border-t border-ink-100">
-          <p className="text-xs text-ink-400">{roleLabel}</p>
-          <p className="font-semibold text-ink-800 truncate">{name}</p>
+          <div className="flex items-center gap-3">
+            <Link href="/account">
+              <Avatar userId={userId} hasAvatar={hasAvatar} letter={letter} />
+            </Link>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-ink-400">{roleLabel}</p>
+              <p className="font-semibold text-ink-800 truncate">{name}</p>
+            </div>
+            <IconButton href="/notifications" label={tt.common.notifications} badge={unreadCount}>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0" /></svg>
+            </IconButton>
+          </div>
           <div className="mt-3 flex items-center gap-2">
             <LangToggle lang={lang} label={tt.common.langToggle} />
+            <Link href="/account" className="h-10 px-3 rounded-full border border-ink-200 text-sm font-semibold text-ink-600 hover:border-gold-400 transition-colors flex items-center">
+              {tt.common.account}
+            </Link>
             <button onClick={logout} className="h-10 px-3 rounded-full border border-ink-200 text-sm font-semibold text-ink-600 hover:border-red-300 hover:text-red-500 transition-colors">
               {tt.common.logout}
             </button>
@@ -102,9 +151,15 @@ export default function AppShell({
             <span className="w-8 h-8 rounded-lg bg-gold-500 flex items-center justify-center font-display font-bold text-ink-900 text-sm">A</span>
             <span className="font-display font-bold text-ink-900 text-sm">{tt.appName}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <LangToggle lang={lang} label={tt.common.langToggle} />
-            <button onClick={logout} aria-label={tt.common.logout} className="h-9 w-9 rounded-full border border-ink-200 flex items-center justify-center text-ink-600">
+            <IconButton href="/notifications" label={tt.common.notifications} badge={unreadCount}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0" /></svg>
+            </IconButton>
+            <Link href="/account" aria-label={tt.common.account} className="h-9 w-9 rounded-full overflow-hidden shrink-0">
+              <Avatar userId={userId} hasAvatar={hasAvatar} letter={letter} size={36} />
+            </Link>
+            <button onClick={logout} aria-label={tt.common.logout} className="h-9 w-9 rounded-full border border-ink-200 flex items-center justify-center text-ink-600 shrink-0">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" /></svg>
             </button>
           </div>
