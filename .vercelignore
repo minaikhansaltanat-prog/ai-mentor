@@ -1,0 +1,14 @@
+webapp/
+node_modules/
+__pycache__/
+*.pyc
+data/
+core.py
+design_system.py
+search.py
+plugin.json
+SKILL.md
+SKILL в.md
+README.md
+Ava.jpeg
+temporary screenshots/
