@@ -1,0 +1,176 @@
+@import "tailwindcss";
+
+:root {
+  --color-cream: #fffbf3;
+  --color-sand: #fff3de;
+
+  --color-ink-50: #faf7f2;
+  --color-ink-100: #f2ece1;
+  --color-ink-200: #e3d8c6;
+  --color-ink-300: #c9b79a;
+  --color-ink-400: #a78b67;
+  --color-ink-500: #7a5f45;
+  --color-ink-600: #5b4a3a;
+  --color-ink-700: #453729;
+  --color-ink-800: #2e241a;
+  --color-ink-900: #1c140c;
+
+  --color-gold-50: #fff7e8;
+  --color-gold-100: #feecc7;
+  --color-gold-200: #fdd98a;
+  --color-gold-300: #fbc257;
+  --color-gold-400: #f2a730;
+  --color-gold-500: #e38b1f;
+  --color-gold-600: #c36f13;
+  --color-gold-700: #9c560f;
+  --color-gold-800: #7a430e;
+  --color-gold-900: #5c330c;
+
+  --color-leaf-50: #eaf9ee;
+  --color-leaf-100: #d2f1da;
+  --color-leaf-200: #a6e3b7;
+  --color-leaf-300: #74ce8f;
+  --color-leaf-400: #3fb668;
+  --color-leaf-500: #1f9d55;
+  --color-leaf-600: #177d43;
+  --color-leaf-700: #136536;
+  --color-leaf-800: #114f2c;
+  --color-leaf-900: #0d3d22;
+
+  --color-red-soft: #ef4444;
+
+  --font-display: var(--font-pt-serif), "Noto Serif", Georgia, serif;
+  --font-body: var(--font-golos), "Noto Sans", -apple-system, sans-serif;
+}
+
+@theme inline {
+  --color-cream: var(--color-cream);
+  --color-sand: var(--color-sand);
+
+  --color-ink-50: var(--color-ink-50);
+  --color-ink-100: var(--color-ink-100);
+  --color-ink-200: var(--color-ink-200);
+  --color-ink-300: var(--color-ink-300);
+  --color-ink-400: var(--color-ink-400);
+  --color-ink-500: var(--color-ink-500);
+  --color-ink-600: var(--color-ink-600);
+  --color-ink-700: var(--color-ink-700);
+  --color-ink-800: var(--color-ink-800);
+  --color-ink-900: var(--color-ink-900);
+
+  --color-gold-50: var(--color-gold-50);
+  --color-gold-100: var(--color-gold-100);
+  --color-gold-200: var(--color-gold-200);
+  --color-gold-300: var(--color-gold-300);
+  --color-gold-400: var(--color-gold-400);
+  --color-gold-500: var(--color-gold-500);
+  --color-gold-600: var(--color-gold-600);
+  --color-gold-700: var(--color-gold-700);
+  --color-gold-800: var(--color-gold-800);
+  --color-gold-900: var(--color-gold-900);
+
+  --color-leaf-50: var(--color-leaf-50);
+  --color-leaf-100: var(--color-leaf-100);
+  --color-leaf-200: var(--color-leaf-200);
+  --color-leaf-300: var(--color-leaf-300);
+  --color-leaf-400: var(--color-leaf-400);
+  --color-leaf-500: var(--color-leaf-500);
+  --color-leaf-600: var(--color-leaf-600);
+  --color-leaf-700: var(--color-leaf-700);
+  --color-leaf-800: var(--color-leaf-800);
+  --color-leaf-900: var(--color-leaf-900);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink-800);
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: var(--color-gold-200);
+  color: var(--color-ink-900);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2.5px solid var(--color-gold-500);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-sand);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-200);
+  border-radius: 99px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgba(28, 20, 12, 0.06),
+    0 8px 20px -6px rgba(28, 20, 12, 0.1);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  border-radius: 14px;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn-primary {
+  background: var(--color-gold-500);
+  color: var(--color-ink-900);
+  box-shadow: 0 10px 22px -10px rgba(227, 139, 31, 0.55);
+}
+.btn-primary:hover {
+  background: var(--color-gold-400);
+  transform: translateY(-1px);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--color-ink-800);
+  border: 1.5px solid var(--color-ink-200);
+}
+.btn-ghost:hover {
+  border-color: var(--color-gold-500);
+  background: var(--color-gold-50);
+}

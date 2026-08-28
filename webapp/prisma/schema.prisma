@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  PARENT
+  TEACHER
+  SCHOOL_ADMIN
+}
+
+enum HomeworkState {
+  PENDING
+  IN_PROGRESS
+  DONE
+}
+
+model School {
+  id        String      @id @default(cuid())
+  name      String
+  address   String?
+  joinCode  String      @unique
+  createdAt DateTime    @default(now())
+  users     User[]
+  classes   ClassRoom[]
+}
+
+model ClassRoom {
+  id        String     @id @default(cuid())
+  school    School     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolId  String
+  name      String
+  grade     Int
+  joinCode  String     @unique
+  teacher   User?      @relation("TeacherClasses", fields: [teacherId], references: [id])
+  teacherId String?
+  students  User[]     @relation("StudentClass")
+  homework  Homework[]
+  createdAt DateTime   @default(now())
+}
+
+model User {
+  id           String   @id @default(cuid())
+  role         Role
+  name         String
+  phone        String   @unique
+  passwordHash String
+  grade        Int?
+  xp           Int      @default(0)
+  streakDays   Int      @default(0)
+  solvedCount  Int      @default(0)
+  lastActiveAt DateTime?
+  createdAt    DateTime @default(now())
+
+  school    School?  @relation(fields: [schoolId], references: [id])
+  schoolId  String?
+
+  classRoom   ClassRoom? @relation("StudentClass", fields: [classRoomId], references: [id])
+  classRoomId String?
+
+  teachingClasses ClassRoom[] @relation("TeacherClasses")
+
+  parentLinks parentLink[] @relation("ParentOf")
+  childLinks  parentLink[] @relation("ChildOf")
+
+  progress         Progress[]
+  chatSessions     ChatSession[]
+  homeworkStatuses HomeworkStatus[]
+  userAchievements UserAchievement[]
+}
+
+model parentLink {
+  id       String @id @default(cuid())
+  parent   User   @relation("ParentOf", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId String
+  child    User   @relation("ChildOf", fields: [childId], references: [id], onDelete: Cascade)
+  childId  String
+
+  @@unique([parentId, childId])
+}
+
+model Subject {
+  id     String  @id @default(cuid())
+  code   String  @unique
+  nameKk String
+  nameRu String
+  icon   String  @default("book")
+  topics Topic[]
+}
+
+model Topic {
+  id         String   @id @default(cuid())
+  subject    Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId  String
+  titleKk    String
+  titleRu    String
+  order      Int      @default(0)
+  gradeMin   Int      @default(5)
+  gradeMax   Int      @default(11)
+  lessons    Lesson[]
+  progress   Progress[]
+  homework   Homework[]
+}
+
+model Lesson {
+  id                 String  @id @default(cuid())
+  topic              Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId            String
+  order              Int     @default(0)
+  theoryKk           String
+  theoryRu           String
+  exampleKk          String
+  exampleRu          String
+  practiceQuestionKk String
+  practiceQuestionRu String
+  practiceAnswer     String
+  hintKk             String  @default("")
+  hintRu             String  @default("")
+}
+
+model Progress {
+  id             String   @id @default(cuid())
+  student        User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId      String
+  topic          Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicId        String
+  masteryPct     Int      @default(0)
+  lastActivityAt DateTime @default(now())
+
+  @@unique([studentId, topicId])
+}
+
+model ChatSession {
+  id        String        @id @default(cuid())
+  student   User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+  subjectCode String?
+  title     String        @default("")
+  createdAt DateTime      @default(now())
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+  role      String
+  content   String
+  createdAt DateTime    @default(now())
+}
+
+model Homework {
+  id          String           @id @default(cuid())
+  classRoom   ClassRoom        @relation(fields: [classRoomId], references: [id], onDelete: Cascade)
+  classRoomId String
+  topic       Topic?           @relation(fields: [topicId], references: [id])
+  topicId     String?
+  titleKk     String
+  titleRu     String
+  dueDate     DateTime
+  createdAt   DateTime         @default(now())
+  statuses    HomeworkStatus[]
+}
+
+model HomeworkStatus {
+  id         String        @id @default(cuid())
+  homework   Homework      @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  homeworkId String
+  student    User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId  String
+  state      HomeworkState @default(PENDING)
+
+  @@unique([homeworkId, studentId])
+}
+
+model Achievement {
+  id       String @id @default(cuid())
+  code     String @unique
+  titleKk  String
+  titleRu  String
+  descKk   String @default("")
+  descRu   String @default("")
+  xpReward Int    @default(50)
+  icon     String @default("trophy")
+
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  achievementId String
+  earnedAt      DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+}
