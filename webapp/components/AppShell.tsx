@@ -121,23 +121,20 @@ export default function AppShell({
         </nav>
         <div className="p-4 border-t border-ink-100">
           <div className="flex items-center gap-3">
-            <Link href="/account">
+            <Link href="/account" className="flex items-center gap-3 min-w-0 flex-1 group">
               <Avatar userId={userId} hasAvatar={hasAvatar} letter={letter} />
+              <div className="min-w-0">
+                <p className="text-xs text-ink-400">{roleLabel}</p>
+                <p className="font-semibold text-ink-800 truncate group-hover:text-gold-600 transition-colors">{name}</p>
+              </div>
             </Link>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs text-ink-400">{roleLabel}</p>
-              <p className="font-semibold text-ink-800 truncate">{name}</p>
-            </div>
             <IconButton href="/notifications" label={tt.common.notifications} badge={unreadCount}>
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0" /></svg>
             </IconButton>
           </div>
-          <div className="mt-3 flex items-center gap-2">
+          <div className="mt-3 flex items-center flex-wrap gap-2">
             <LangToggle lang={lang} label={tt.common.langToggle} />
-            <Link href="/account" className="h-10 px-3 rounded-full border border-ink-200 text-sm font-semibold text-ink-600 hover:border-gold-400 transition-colors flex items-center">
-              {tt.common.account}
-            </Link>
-            <button onClick={logout} className="h-10 px-3 rounded-full border border-ink-200 text-sm font-semibold text-ink-600 hover:border-red-300 hover:text-red-500 transition-colors">
+            <button onClick={logout} className="h-10 px-3 rounded-full border border-ink-200 text-sm font-semibold text-ink-600 hover:border-red-300 hover:text-red-500 transition-colors shrink-0">
               {tt.common.logout}
             </button>
           </div>
