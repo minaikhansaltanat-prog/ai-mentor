@@ -1,0 +1,12 @@
+{
+  "name": "ai-ustaz-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI ҰСТАЗ marketing site",
+  "scripts": {
+    "serve": "node serve.mjs"
+  },
+  "dependencies": {
+    "puppeteer-core": "^25.9.0"
+  }
+}

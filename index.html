@@ -1,0 +1,1266 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>AI ҰСТАЗ — ЖИ негізіндегі жеке тьютор</title>
+<meta name="description" content="AI ҰСТАЗ — қазақ және орыс тілінде сөйлейтін жеке ЖИ мұғалім: түсіндіреді, камерамен есеп таниды, дауыспен сөйлеседі, ата-анаға баланың нақты прогресін көрсетеді." />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23E38B1F'/%3E%3Cpath d='M13 8.5a4 4 0 00-4 4v.4A4 4 0 006 16.7v1.3a4 4 0 002.6 3.7v.3a4 4 0 004 4H14V8.5h-1z' stroke='%231C140C' stroke-width='1.6' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M19 8.5a4 4 0 014 4v.4a4 4 0 013 3.8v1.3a4 4 0 01-3 3.7v.3a4 4 0 01-4 4H18V8.5h1z' stroke='%231C140C' stroke-width='1.6' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&family=Golos+Text:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cream:   '#FFFBF3',
+          sand:    '#FFF3DE',
+          sand2:   '#FBE8C8',
+          ink: {
+            50:'#FAF7F2',100:'#F2ECE1',200:'#E3D8C6',300:'#C9B79A',
+            400:'#A78B67',500:'#7A5F45',600:'#5B4A3A',700:'#453729',
+            800:'#2E241A',900:'#1C140C',950:'#130D07'
+          },
+          gold: {
+            50:'#FFF7E8',100:'#FEECC7',200:'#FDD98A',300:'#FBC257',
+            400:'#F2A730',500:'#E38B1F',600:'#C36F13',700:'#9C560F',
+            800:'#7A430E',900:'#5C330C'
+          },
+          leaf: {
+            50:'#EAF9EE',100:'#D2F1DA',200:'#A6E3B7',300:'#74CE8F',
+            400:'#3FB668',500:'#1F9D55',600:'#177D43',700:'#136536',
+            800:'#114F2C',900:'#0D3D22'
+          },
+          twogis: '#12A244',
+          wa: '#25D366'
+        },
+        fontFamily: {
+          serif: ["'PT Serif'", "'Noto Serif'", "Georgia", "serif"],
+          sans: ["'Golos Text'", "'Noto Sans'", "-apple-system", "sans-serif"]
+        },
+        boxShadow: {
+          card: '0 1px 2px rgba(28,20,12,.06), 0 8px 20px -6px rgba(28,20,12,.10)',
+          lift: '0 2px 4px rgba(28,20,12,.08), 0 20px 40px -12px rgba(227,139,31,.22)',
+          glow: '0 0 0 1px rgba(227,139,31,.15), 0 12px 32px -8px rgba(227,139,31,.35)'
+        },
+        maxWidth: { '8xl': '90rem' }
+      }
+    }
+  };
+</script>
+
+<style>
+  :root{
+    --ease-spring: cubic-bezier(.34,1.56,.64,1);
+    --ease-out: cubic-bezier(.16,1,.3,1);
+  }
+  *{ -webkit-tap-highlight-color: transparent; }
+  html{ scroll-behavior:smooth; }
+  html, body{ overflow-x:hidden; width:100%; max-width:100vw; }
+  body{
+    background:#FFFBF3;
+    color:#2E241A;
+    font-family:'Golos Text','Noto Sans',-apple-system,sans-serif;
+    line-height:1.7;
+  }
+  h1,h2,h3,h4,.font-display{
+    font-family:'PT Serif','Noto Serif',Georgia,serif;
+    letter-spacing:-0.02em;
+  }
+  ::selection{ background:#FDD98A; color:#2E241A; }
+
+  /* focus states */
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible{
+    outline: 2.5px solid #E38B1F;
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar-track{ background:#FFF3DE; }
+  ::-webkit-scrollbar-thumb{ background:#E3D8C6; border-radius:99px; }
+  ::-webkit-scrollbar-thumb:hover{ background:#C9B79A; }
+
+  /* grain texture overlay */
+  .grain{ position:relative; isolation:isolate; }
+  .grain::before{
+    content:''; position:absolute; inset:0; pointer-events:none; z-index:1;
+    opacity:.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* reveal-on-scroll */
+  .reveal{ opacity:0; transform:translateY(24px); transition:opacity .7s var(--ease-out), transform .7s var(--ease-out); }
+  .reveal.is-visible{ opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce){
+    .reveal{ opacity:1; transform:none; transition:none; }
+    html{ scroll-behavior:auto; }
+  }
+
+  /* header */
+  #site-header{ transition: box-shadow .3s var(--ease-out), background-color .3s var(--ease-out); }
+  #site-header.scrolled{ box-shadow: 0 1px 0 rgba(28,20,12,.06), 0 12px 24px -16px rgba(28,20,12,.18); }
+
+  /* mobile menu */
+  #mobile-menu{
+    transition: transform .38s var(--ease-out), opacity .3s var(--ease-out);
+    transform: translateX(100%);
+  }
+  #mobile-menu.open{ transform: translateX(0); }
+  #menu-scrim{ transition: opacity .3s var(--ease-out); }
+
+  /* buttons */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+    font-weight:700; border-radius:14px; transition:transform .25s var(--ease-spring), box-shadow .25s var(--ease-out), background-color .25s var(--ease-out);
+    white-space:nowrap;
+  }
+  .btn:active{ transform:scale(.97); }
+  .btn-primary{ background:#E38B1F; color:#2E241A; box-shadow:0 1px 2px rgba(28,20,12,.1), 0 10px 24px -8px rgba(227,139,31,.55); }
+  .btn-primary:hover{ background:#F2A730; transform:translateY(-2px); box-shadow:0 4px 10px rgba(28,20,12,.12), 0 18px 34px -10px rgba(227,139,31,.6); }
+  .btn-dark{ background:#2E241A; color:#FFF7E8; box-shadow:0 10px 24px -10px rgba(28,20,12,.5); }
+  .btn-dark:hover{ background:#1C140C; transform:translateY(-2px); }
+  .btn-ghost{ background:transparent; color:#2E241A; border:1.5px solid #E3D8C6; }
+  .btn-ghost:hover{ border-color:#E38B1F; background:#FFF7E8; transform:translateY(-2px); }
+  .btn-leaf{ background:#1F9D55; color:#EAF9EE; box-shadow:0 10px 24px -10px rgba(31,157,85,.55); }
+  .btn-leaf:hover{ background:#177D43; transform:translateY(-2px); }
+
+  .card{ background:#fff; border-radius:22px; box-shadow:0 1px 2px rgba(28,20,12,.06), 0 8px 20px -6px rgba(28,20,12,.10); }
+
+  /* phone frame */
+  .phone-frame{
+    background:#1C140C; border-radius:44px; padding:14px;
+    box-shadow:0 30px 60px -20px rgba(28,20,12,.45), 0 10px 20px -8px rgba(28,20,12,.3);
+  }
+  .phone-screen{ background:#FFFBF3; border-radius:32px; overflow:hidden; position:relative; }
+  .phone-notch{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    width:96px; height:22px; background:#1C140C; border-radius:14px; z-index:20;
+  }
+
+  /* whatsapp float button */
+  .wa-float{ position:fixed; right:18px; bottom:18px; z-index:60; }
+  .wa-ring{ position:absolute; inset:0; border-radius:999px; }
+  .wa-ring-1{ animation: wa-pulse 2.6s var(--ease-out) infinite; background:radial-gradient(circle, rgba(37,211,102,.55), rgba(227,139,31,0) 70%); }
+  .wa-ring-2{ animation: wa-pulse 2.6s var(--ease-out) infinite .9s; background:radial-gradient(circle, rgba(227,139,31,.5), rgba(37,211,102,0) 70%); }
+  @keyframes wa-pulse{
+    0%{ transform:scale(1); opacity:.9; }
+    100%{ transform:scale(2.3); opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .wa-ring-1, .wa-ring-2{ animation:none; display:none; }
+  }
+
+  /* carousel */
+  .carousel-track{ scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .carousel-track::-webkit-scrollbar{ display:none; }
+  .carousel-card{ scroll-snap-align:start; }
+
+  /* tabs underline */
+  .tab-btn{ position:relative; }
+  .tab-btn[data-active="true"]{ color:#2E241A; }
+  .tab-btn[data-active="true"]::after{
+    content:''; position:absolute; left:0; right:0; bottom:-2px; height:3px; border-radius:99px; background:#E38B1F;
+  }
+
+  /* panel pill tabs */
+  .tab-panel-btn{ transition: background-color .25s var(--ease-out), color .25s var(--ease-out), border-color .25s var(--ease-out); }
+  .tab-panel-btn[data-active="true"]{ background:#E38B1F !important; color:#1C140C !important; border-color:transparent !important; }
+
+  /* faq */
+  .faq-panel{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .35s var(--ease-out); }
+  .faq-item[data-open="true"] .faq-panel{ grid-template-rows:1fr; }
+  .faq-panel > div{ overflow:hidden; }
+  .faq-chevron{ transition:transform .3s var(--ease-out); }
+  .faq-item[data-open="true"] .faq-chevron{ transform:rotate(180deg); }
+
+  /* image color treatment */
+  .photo-treat{ position:relative; overflow:hidden; }
+  .photo-treat img{ display:block; width:100%; height:100%; object-fit:cover; }
+  .photo-treat::after{
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(28,20,12,0) 40%, rgba(28,20,12,.55) 100%);
+  }
+  .photo-warm::before{
+    content:''; position:absolute; inset:0; z-index:1;
+    background:#E38B1F; opacity:.10; mix-blend-mode:multiply;
+  }
+
+  [x-cloak]{ display:none !important; }
+
+  @keyframes float{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-10px); }
+  }
+</style>
+</head>
+<body class="bg-cream text-ink-800 antialiased">
+
+<!-- ============ ICON SPRITE ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M4 12h16M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 015.5 7h2l1-2h7l1 2h2A1.5 1.5 0 0120 8.5v9A1.5 1.5 0 0118.5 19h-13A1.5 1.5 0 014 17.5v-9z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.4" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0014 0M12 18v3m-3.5 0h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 015.5 4h13A1.5 1.5 0 0120 5.5v9a1.5 1.5 0 01-1.5 1.5H9l-4 4v-4H5.5A1.5 1.5 0 014 14.5v-9z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="M4 16l5-5 4 4 7-8M20 7h-4v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15.5 6.5a3 3 0 010 5.8M20.5 20c0-2.8-2-5.2-4.7-5.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.2 1 5.9L12 17l-5.2 2.8 1-5.9-4.3-4.2 5.9-.8L12 3.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5-11-6.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill="currentColor"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 105 9.5C5 14.8 12 21 12 21z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4.5 4.5L19 8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4.5a3 3 0 00-3 3v.3A3 3 0 004 10.5v1a3 3 0 002 2.8v.2a3 3 0 003 3h1v-13H9z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M15 4.5a3 3 0 013 3v.3a3 3 0 012 2.7v1a3 3 0 01-2 2.8v.2a3 3 0 01-3 3h-1v-13h1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 01-10 0V4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M7 5H4v2a3 3 0 003 3M17 5h3v2a3 3 0 01-3 3M10 18h4M12 14v4m-3 3h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M6 3h4l1.5 4.5-2.4 1.6a12 12 0 006.8 6.8l1.6-2.4L21.5 15v4a2 2 0 01-2.2 2C10.5 20.4 4.6 14.5 4 6.7A2 2 0 016 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.7 5.2 3.7 8.5s-1.3 6.2-3.7 8.5c-2.4-2.3-3.7-5.2-3.7-8.5S9.6 5.8 12 3.5z" stroke="currentColor" stroke-width="1.7"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 015.5 4H12v16H5.5A1.5 1.5 0 014 18.5v-13zM20 5.5A1.5 1.5 0 0018.5 4H12v16h6.5a1.5 1.5 0 001.5-1.5v-13z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  <symbol id="i-waveform" viewBox="0 0 24 24"><path d="M3 12v0M6 9v6M9 6v12M12 4v16M15 7v10M18 9v6M21 12v0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+</defs>
+</svg>
+
+<!-- ============ HEADER ============ -->
+<header id="site-header" class="fixed top-0 inset-x-0 z-50 bg-cream/90 backdrop-blur-md border-b border-ink-100">
+  <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-10">
+    <div class="h-16 md:h-20 flex items-center justify-between gap-3">
+      <a href="#top" class="flex items-center gap-2.5 shrink-0 group">
+        <span class="w-10 h-10 rounded-2xl bg-gold-500 flex items-center justify-center shadow-card transition-transform duration-300 group-hover:-rotate-6">
+          <svg viewBox="0 0 24 24" class="w-5.5 h-5.5 text-ink-900" width="22" height="22"><use href="#i-brain"/></svg>
+        </span>
+        <span class="font-display font-bold text-lg md:text-xl tracking-tight text-ink-900">AI ҰСТАЗ</span>
+      </a>
+
+      <nav class="hidden lg:flex items-center gap-8 font-medium text-[15px] text-ink-700">
+        <a href="#features" class="hover:text-gold-600 transition-colors" data-i18n="nav.features">Мүмкіндіктер</a>
+        <a href="#panels" class="hover:text-gold-600 transition-colors" data-i18n="nav.howItWorks">Қалай жұмыс істейді</a>
+        <a href="#subjects" class="hover:text-gold-600 transition-colors" data-i18n="nav.subjects">Пәндер</a>
+        <a href="#testimonials" class="hover:text-gold-600 transition-colors" data-i18n="nav.testimonials">Пікірлер</a>
+        <a href="#faq" class="hover:text-gold-600 transition-colors" data-i18n="nav.faq">Сұрақ-жауап</a>
+      </nav>
+
+      <div class="flex items-center gap-2 md:gap-3">
+        <a href="#cta" class="btn btn-primary hidden md:inline-flex h-11 px-5 text-sm" data-i18n="nav.cta">Тегін бастау</a>
+
+        <!-- language switch -->
+        <button id="lang-toggle" type="button" aria-label="Тілді ауыстыру / Переключить язык"
+          class="h-11 px-3 md:px-3.5 rounded-full border border-ink-200 bg-white/70 hover:border-gold-500 hover:bg-white transition-colors flex items-center gap-1.5 text-sm font-bold text-ink-800">
+          <svg viewBox="0 0 24 24" class="w-4.5 h-4.5 text-gold-600" width="18" height="18"><use href="#i-globe"/></svg>
+          <span id="lang-toggle-label">ҚАЗ</span>
+        </button>
+
+        <!-- hamburger (mobile) -->
+        <button id="menu-open" type="button" aria-label="Меню" data-i18n-aria="a11y.menu" aria-expanded="false" aria-controls="mobile-menu"
+          class="lg:hidden h-11 w-11 rounded-full border border-ink-200 bg-white/70 flex items-center justify-center text-ink-800 hover:border-gold-500 transition-colors">
+          <svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-menu"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- mobile menu scrim + panel -->
+<div id="menu-scrim" class="fixed inset-0 bg-ink-900/50 backdrop-blur-sm z-[55] opacity-0 pointer-events-none lg:hidden"></div>
+<aside id="mobile-menu" class="fixed top-0 right-0 h-[100dvh] w-[82%] max-w-sm bg-cream z-[60] shadow-2xl lg:hidden flex flex-col">
+  <div class="h-16 flex items-center justify-between px-5 border-b border-ink-100 shrink-0">
+    <span class="font-display font-bold text-lg text-ink-900">AI ҰСТАЗ</span>
+    <button id="menu-close" type="button" aria-label="Жабу" data-i18n-aria="a11y.close" class="h-10 w-10 rounded-full border border-ink-200 flex items-center justify-center text-ink-800">
+      <svg viewBox="0 0 24 24" class="w-5 h-5" width="20" height="20"><use href="#i-close"/></svg>
+    </button>
+  </div>
+  <nav class="flex flex-col px-5 py-6 gap-1 text-lg font-semibold text-ink-800 overflow-y-auto">
+    <a href="#features" class="menu-link py-3 border-b border-ink-100" data-i18n="nav.features">Мүмкіндіктер</a>
+    <a href="#panels" class="menu-link py-3 border-b border-ink-100" data-i18n="nav.howItWorks">Қалай жұмыс істейді</a>
+    <a href="#subjects" class="menu-link py-3 border-b border-ink-100" data-i18n="nav.subjects">Пәндер</a>
+    <a href="#testimonials" class="menu-link py-3 border-b border-ink-100" data-i18n="nav.testimonials">Пікірлер</a>
+    <a href="#security" class="menu-link py-3 border-b border-ink-100" data-i18n="nav.security">Қауіпсіздік</a>
+    <a href="#faq" class="menu-link py-3 border-b border-ink-100" data-i18n="nav.faq">Сұрақ-жауап</a>
+  </nav>
+  <div class="mt-auto p-5">
+    <a href="#cta" class="menu-link btn btn-primary w-full h-12 text-base" data-i18n="nav.cta">Тегін бастау</a>
+  </div>
+</aside>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative pt-28 pb-16 md:pt-40 md:pb-24 overflow-hidden">
+  <div class="pointer-events-none absolute inset-0 -z-10">
+    <div class="absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full bg-gold-200/50 blur-3xl"></div>
+    <div class="absolute top-40 -right-32 w-[460px] h-[460px] rounded-full bg-leaf-100/60 blur-3xl"></div>
+  </div>
+
+  <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-10">
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+      <div class="reveal">
+        <span class="inline-flex items-center gap-2 rounded-full bg-white border border-gold-200 pl-2 pr-4 py-1.5 text-sm font-semibold text-ink-700 shadow-card">
+          <span class="w-6 h-6 rounded-full bg-gold-500 flex items-center justify-center">
+            <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-ink-900" width="14" height="14"><use href="#i-brain"/></svg>
+          </span>
+          <span data-i18n="hero.badge">ЖИ негізіндегі жеке тьютор</span>
+        </span>
+
+        <h1 class="mt-6 font-display font-bold text-4xl sm:text-5xl xl:text-[3.4rem] leading-[1.08] text-ink-900" data-i18n="hero.title">
+          Әр оқушыға — өз ЖИ ұстазы
+        </h1>
+        <p class="mt-6 text-lg text-ink-600 max-w-xl leading-relaxed" data-i18n="hero.subtitle">
+          AI ҰСТАЗ — қазақ және орыс тілінде сөйлейтін жеке тьютор: түсіндіреді, есеп шығартады, дауыстап сөйлеседі және ата-анаға баланың нақты прогресін көрсетеді.
+        </p>
+
+        <div class="mt-8 flex flex-col sm:flex-row gap-3.5">
+          <a href="https://wa.me/77770464141" target="_blank" rel="noopener" class="btn btn-primary h-[52px] md:h-14 px-7 text-base">
+            <span data-i18n="hero.ctaPrimary">Тегін бастау</span>
+            <svg viewBox="0 0 24 24" class="w-5 h-5" width="20" height="20"><use href="#i-arrow-right"/></svg>
+          </a>
+          <a href="#panels" class="btn btn-ghost h-[52px] md:h-14 px-7 text-base">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" width="20" height="20"><use href="#i-play"/></svg>
+            <span data-i18n="hero.ctaSecondary">Демоны көру</span>
+          </a>
+        </div>
+
+        <dl class="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-5 max-w-xl">
+          <div>
+            <dt class="font-display font-bold text-2xl text-ink-900">5–11</dt>
+            <dd class="text-sm text-ink-500 mt-0.5" data-i18n="hero.stat1">сынып бойынша</dd>
+          </div>
+          <div>
+            <dt class="font-display font-bold text-2xl text-ink-900">2</dt>
+            <dd class="text-sm text-ink-500 mt-0.5" data-i18n="hero.stat2">тілде — ҚАЗ/РУС</dd>
+          </div>
+          <div>
+            <dt class="font-display font-bold text-2xl text-ink-900">24/7</dt>
+            <dd class="text-sm text-ink-500 mt-0.5" data-i18n="hero.stat3">қолжетімді</dd>
+          </div>
+          <div>
+            <dt class="font-display font-bold text-2xl text-ink-900">100%</dt>
+            <dd class="text-sm text-ink-500 mt-0.5" data-i18n="hero.stat4">Сократ әдісі</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="relative reveal" style="transition-delay:.12s">
+        <div class="relative mx-auto max-w-md">
+          <div class="photo-treat photo-warm rounded-[32px] overflow-hidden shadow-lift aspect-[4/5]">
+            <img src="Photo/aaadbf388281625e47cb201002fec1cd.jpg" alt="Сабаққа қуана қатысып отырған оқушы" data-i18n-alt="hero.imgAlt" loading="eager" />
+          </div>
+
+          <div class="absolute -left-6 sm:-left-10 top-10 card px-4 py-3 flex items-center gap-3 w-56 animate-[float_6s_ease-in-out_infinite]">
+            <span class="w-10 h-10 rounded-xl bg-leaf-100 flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" class="w-5 h-5 text-leaf-600" width="20" height="20"><use href="#i-trend"/></svg>
+            </span>
+            <div class="leading-tight">
+              <p class="text-xs text-ink-500" data-i18n="hero.card1.label">Апталық прогресс</p>
+              <p class="font-display font-bold text-ink-900">+18%</p>
+            </div>
+          </div>
+
+          <div class="absolute -right-4 sm:-right-8 bottom-8 card px-4 py-3 flex items-center gap-3 w-60 animate-[float_7s_ease-in-out_infinite_.5s]">
+            <span class="w-10 h-10 rounded-xl bg-gold-100 flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-600" width="20" height="20"><use href="#i-check"/></svg>
+            </span>
+            <div class="leading-tight">
+              <p class="text-xs text-ink-500" data-i18n="hero.card2.label">Дискриминант есептелді</p>
+              <p class="font-display font-bold text-ink-900" data-i18n="hero.card2.value">Дұрыс шешілді ✓</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROBLEM ============ -->
+<section class="py-20 md:py-28">
+  <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-10">
+    <div class="max-w-2xl reveal">
+      <span class="text-sm font-bold tracking-wide text-gold-600 uppercase" data-i18n="problem.eyebrow">Мәселе</span>
+      <h2 class="mt-3 font-display font-bold text-3xl sm:text-4xl text-ink-900" data-i18n="problem.title">Мәселе неде?</h2>
+      <p class="mt-4 text-lg text-ink-600" data-i18n="problem.subtitle">Репетитор қымбат, мұғалімнің уақыты жетпейді, ал ата-ана баланың қай жерде қиналып жатқанын білмейді.</p>
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="reveal card p-7 md:p-8">
+        <span class="w-12 h-12 rounded-2xl bg-gold-50 border border-gold-100 flex items-center justify-center text-gold-600">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-phone"/></svg>
+        </span>
+        <h3 class="mt-5 font-display font-bold text-xl text-ink-900" data-i18n="problem.card1.title">Репетитор — қымбат</h3>
+        <p class="mt-2.5 text-ink-600" data-i18n="problem.card1.text">Әр сағат сайын төлеу арзан емес, ал тұрақты сабақ ай сайын үлкен бюджет талап етеді.</p>
+      </div>
+      <div class="reveal card p-7 md:p-8" style="transition-delay:.08s">
+        <span class="w-12 h-12 rounded-2xl bg-leaf-50 border border-leaf-100 flex items-center justify-center text-leaf-600">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-users"/></svg>
+        </span>
+        <h3 class="mt-5 font-display font-bold text-xl text-ink-900" data-i18n="problem.card2.title">Мұғалімнің уақыты жетпейді</h3>
+        <p class="mt-2.5 text-ink-600" data-i18n="problem.card2.text">Сыныпта 25–30 оқушы бар, әр балаға жеке көңіл бөлуге мүмкіндік аз.</p>
+      </div>
+      <div class="reveal card p-7 md:p-8 sm:col-span-2 lg:col-span-1" style="transition-delay:.16s">
+        <span class="w-12 h-12 rounded-2xl bg-gold-50 border border-gold-100 flex items-center justify-center text-gold-600">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-trend"/></svg>
+        </span>
+        <h3 class="mt-5 font-display font-bold text-xl text-ink-900" data-i18n="problem.card3.title">Ата-ана көрмейді</h3>
+        <p class="mt-2.5 text-ink-600" data-i18n="problem.card3.text">Бала қай тақырыпта қиналып жатқанын ата-ана тек тоқсан соңында, бағадан біледі.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section id="features" class="py-20 md:py-28 bg-sand/60 grain">
+  <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
+    <div class="max-w-2xl reveal">
+      <span class="text-sm font-bold tracking-wide text-leaf-600 uppercase" data-i18n="features.eyebrow">Шешім</span>
+      <h2 class="mt-3 font-display font-bold text-3xl sm:text-4xl text-ink-900" data-i18n="features.title">AI ҰСТАЗ қалай көмектеседі</h2>
+      <p class="mt-4 text-lg text-ink-600" data-i18n="features.subtitle">Оқушыдан мектеп әкімшісіне дейін — бір платформада барлығы бар.</p>
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <div class="reveal card p-7 md:p-8 hover:shadow-lift transition-shadow duration-300">
+        <span class="w-12 h-12 rounded-2xl bg-gold-500 flex items-center justify-center text-ink-900 shadow-card">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-brain"/></svg>
+        </span>
+        <h3 class="mt-5 font-display font-bold text-xl text-ink-900" data-i18n="features.card1.title">Сократ әдісімен түсіндіреді</h3>
+        <p class="mt-2.5 text-ink-600" data-i18n="features.card1.text">Дайын жауап бермейді — жетекші сұрақтар қойып, баланы өз бетімен ойлауға үйретеді.</p>
+      </div>
+
+      <div class="reveal card p-7 md:p-8 hover:shadow-lift transition-shadow duration-300" style="transition-delay:.06s">
+        <span class="w-12 h-12 rounded-2xl bg-leaf-500 flex items-center justify-center text-white shadow-card">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-camera"/></svg>
+        </span>
+        <h3 class="mt-5 font-display font-bold text-xl text-ink-900" data-i18n="features.card2.title">Камерамен есепті таниды</h3>
+        <p class="mt-2.5 text-ink-600" data-i18n="features.card2.text">Кез келген есепті камераға түсіріңіз — AI оны танып, қадам-қадаммен шешуге көмектеседі.</p>
+      </div>
+
+      <div class="reveal card p-7 md:p-8 hover:shadow-lift transition-shadow duration-300" style="transition-delay:.12s">
+        <span class="w-12 h-12 rounded-2xl bg-ink-900 flex items-center justify-center text-gold-400 shadow-card">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-mic"/></svg>
+        </span>
+        <h3 class="mt-5 font-display font-bold text-xl text-ink-900" data-i18n="features.card3.title">Дауыспен сөйлеседі</h3>
+        <p class="mt-2.5 text-ink-600" data-i18n="features.card3.text">Оқушы сұрақ қояды, AI дауыспен жауап береді — тыңдап, сөйлеп үйрену жылдамырақ жүреді.</p>
+      </div>
+
+      <div class="reveal card p-7 md:p-8 hover:shadow-lift transition-shadow duration-300" style="transition-delay:.18s">
+        <span class="w-12 h-12 rounded-2xl bg-gold-100 flex items-center justify-center text-gold-600 shadow-card">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-trend"/></svg>
+        </span>
+        <h3 class="mt-5 font-display font-bold text-xl text-ink-900" data-i18n="features.card4.title">Ата-анаға нақты прогресс</h3>
+        <p class="mt-2.5 text-ink-600" data-i18n="features.card4.text">Қай тақырып әлсіз, қайсысы мықты — барлығы сандармен, түсінікті график түрінде.</p>
+      </div>
+
+      <div class="reveal card p-7 md:p-8 hover:shadow-lift transition-shadow duration-300" style="transition-delay:.24s">
+        <span class="w-12 h-12 rounded-2xl bg-leaf-100 flex items-center justify-center text-leaf-600 shadow-card">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-users"/></svg>
+        </span>
+        <h3 class="mt-5 font-display font-bold text-xl text-ink-900" data-i18n="features.card5.title">Мектепке толық аналитика</h3>
+        <p class="mt-2.5 text-ink-600" data-i18n="features.card5.text">Сынып пен мектеп деңгейінде үлгерімді бақылап, «тәуекел аймағындағы» оқушыны уақытында көру.</p>
+      </div>
+
+      <div class="reveal card p-7 md:p-8 hover:shadow-lift transition-shadow duration-300" style="transition-delay:.3s">
+        <span class="w-12 h-12 rounded-2xl bg-gold-500 flex items-center justify-center text-ink-900 shadow-card">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-trophy"/></svg>
+        </span>
+        <h3 class="mt-5 font-display font-bold text-xl text-ink-900" data-i18n="features.card6.title">Ойын арқылы ынталандыру</h3>
+        <p class="mt-2.5 text-ink-600" data-i18n="features.card6.text">XP, деңгейлер және жетістіктер оқушыны әр күн сабаққа қайта оралуға шақырады.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ ROLES ============ -->
+<section id="roles" class="py-20 md:py-28">
+  <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-10">
+    <div class="max-w-2xl reveal">
+      <span class="text-sm font-bold tracking-wide text-gold-600 uppercase" data-i18n="roles.eyebrow">Пайдаланушылар</span>
+      <h2 class="mt-3 font-display font-bold text-3xl sm:text-4xl text-ink-900" data-i18n="roles.title">Барлығына — өз тәжірибесі</h2>
+      <p class="mt-4 text-lg text-ink-600" data-i18n="roles.subtitle">Оқушыдан мектеп әкімшісіне дейін — әр рөлге арналған өз экраны бар.</p>
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="reveal rounded-3xl border border-ink-100 bg-white p-7 hover:border-gold-300 hover:-translate-y-1 duration-300" style="transition-property:transform,border-color;">
+        <span class="w-12 h-12 rounded-2xl bg-gold-100 flex items-center justify-center text-gold-600">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-book"/></svg>
+        </span>
+        <h3 class="mt-5 font-display font-bold text-lg text-ink-900" data-i18n="roles.card1.title">Оқушы</h3>
+        <p class="mt-2 text-sm text-ink-600" data-i18n="roles.card1.text">Сабақты түсінеді, тез көмек алады, өз прогресін көріп, мотивацияда болады.</p>
+      </div>
+      <div class="reveal rounded-3xl border border-ink-100 bg-white p-7 hover:border-gold-300 hover:-translate-y-1 duration-300" style="transition-delay:.06s; transition-property:transform,border-color;">
+        <span class="w-12 h-12 rounded-2xl bg-leaf-100 flex items-center justify-center text-leaf-600">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-trend"/></svg>
+        </span>
+        <h3 class="mt-5 font-display font-bold text-lg text-ink-900" data-i18n="roles.card2.title">Ата-ана</h3>
+        <p class="mt-2 text-sm text-ink-600" data-i18n="roles.card2.text">Баланың үлгерімін, әлсіз/күшті тақырыптарын, апталық белсенділігін бақылайды.</p>
+      </div>
+      <div class="reveal rounded-3xl border border-ink-100 bg-white p-7 hover:border-gold-300 hover:-translate-y-1 duration-300" style="transition-delay:.12s; transition-property:transform,border-color;">
+        <span class="w-12 h-12 rounded-2xl bg-gold-100 flex items-center justify-center text-gold-600">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-users"/></svg>
+        </span>
+        <h3 class="mt-5 font-display font-bold text-lg text-ink-900" data-i18n="roles.card3.title">Мұғалім</h3>
+        <p class="mt-2 text-sm text-ink-600" data-i18n="roles.card3.text">Сыныптың жалпы үлгерімін, проблемалық тақырыптарды көреді, тапсырма береді.</p>
+      </div>
+      <div class="reveal rounded-3xl border border-ink-100 bg-white p-7 hover:border-gold-300 hover:-translate-y-1 duration-300" style="transition-delay:.18s; transition-property:transform,border-color;">
+        <span class="w-12 h-12 rounded-2xl bg-leaf-100 flex items-center justify-center text-leaf-600">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-shield"/></svg>
+        </span>
+        <h3 class="mt-5 font-display font-bold text-lg text-ink-900" data-i18n="roles.card4.title">Мектеп әкімшісі</h3>
+        <p class="mt-2 text-sm text-ink-600" data-i18n="roles.card4.text">Барлық сынып пен пән бойынша аналитика, «тәуекел аймағындағы» оқушылар.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PANELS SHOWCASE ============ -->
+<section id="panels" class="relative py-20 md:py-28 bg-ink-900 text-white grain overflow-hidden">
+  <div class="pointer-events-none absolute inset-0 -z-0">
+    <div class="absolute -top-40 left-1/4 w-[560px] h-[560px] rounded-full bg-gold-500/10 blur-3xl"></div>
+    <div class="absolute bottom-0 right-0 w-[460px] h-[460px] rounded-full bg-leaf-500/10 blur-3xl"></div>
+  </div>
+
+  <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
+    <div class="max-w-2xl reveal">
+      <span class="text-sm font-bold tracking-wide text-gold-400 uppercase" data-i18n="panels.eyebrow">Қосымша ішінде</span>
+      <h2 class="mt-3 font-display font-bold text-3xl sm:text-4xl text-white" data-i18n="panels.title">Қосымшаның ішіне көз жүгіртіңіз</h2>
+      <p class="mt-4 text-lg text-ink-300" data-i18n="panels.subtitle">Әрбір экран — оқуды жеңіл әрі тартымды ету үшін ойластырылған.</p>
+    </div>
+
+    <!-- tabs -->
+    <div class="mt-10 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto" style="scrollbar-width:none;">
+      <div data-tabs="panels" class="flex gap-2 w-max sm:w-auto sm:flex-wrap">
+        <button data-tab-btn="panels" data-tab-value="home" data-active="true" class="tab-panel-btn px-4 py-2.5 rounded-full text-sm font-semibold bg-white/10 text-white border border-white/10 whitespace-nowrap" data-i18n="panels.tab.home">Басты</button>
+        <button data-tab-btn="panels" data-tab-value="aiteacher" data-active="false" class="tab-panel-btn px-4 py-2.5 rounded-full text-sm font-semibold bg-white/5 text-ink-300 border border-white/10 whitespace-nowrap" data-i18n="panels.tab.aiteacher">AI Teacher</button>
+        <button data-tab-btn="panels" data-tab-value="camera" data-active="false" class="tab-panel-btn px-4 py-2.5 rounded-full text-sm font-semibold bg-white/5 text-ink-300 border border-white/10 whitespace-nowrap" data-i18n="panels.tab.camera">Камера</button>
+        <button data-tab-btn="panels" data-tab-value="voice" data-active="false" class="tab-panel-btn px-4 py-2.5 rounded-full text-sm font-semibold bg-white/5 text-ink-300 border border-white/10 whitespace-nowrap" data-i18n="panels.tab.voice">Дауыс</button>
+        <button data-tab-btn="panels" data-tab-value="progress" data-active="false" class="tab-panel-btn px-4 py-2.5 rounded-full text-sm font-semibold bg-white/5 text-ink-300 border border-white/10 whitespace-nowrap" data-i18n="panels.tab.progress">Прогресс</button>
+        <button data-tab-btn="panels" data-tab-value="parent" data-active="false" class="tab-panel-btn px-4 py-2.5 rounded-full text-sm font-semibold bg-white/5 text-ink-300 border border-white/10 whitespace-nowrap" data-i18n="panels.tab.parent">Ата-ана</button>
+        <button data-tab-btn="panels" data-tab-value="motivation" data-active="false" class="tab-panel-btn px-4 py-2.5 rounded-full text-sm font-semibold bg-white/5 text-ink-300 border border-white/10 whitespace-nowrap" data-i18n="panels.tab.motivation">Мотивация</button>
+      </div>
+    </div>
+
+    <!-- HOME PANEL -->
+    <div data-tab-panel="panels" data-tab-value="home" class="mt-12 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div class="order-2 lg:order-1">
+        <span class="inline-flex w-11 h-11 rounded-2xl bg-gold-500 items-center justify-center text-ink-900 mb-5"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-trend"/></svg></span>
+        <h3 class="font-display font-bold text-2xl md:text-3xl text-white" data-i18n="panels.home.title">Күн сайынғы мақсат — бір көзқараста</h3>
+        <p class="mt-3 text-ink-300 leading-relaxed" data-i18n="panels.home.text">Оқушы басты бетте бүгінгі тақырыпты, серияны және пәндер бойынша прогресті бірден көреді — сабаққа кірісу үшін бір түйме басу жеткілікті.</p>
+        <ul class="mt-6 space-y-3 text-ink-200">
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.home.li1">Жеке сәлемдесу және «Бүгінгі мақсат» ұсынысы</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.home.li2">Серия (streak) және жалпы прогресс индикаторы</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.home.li3">Пәндер тізімі — әрқайсысы бойынша % үлгерім</span></li>
+        </ul>
+      </div>
+      <div class="order-1 lg:order-2 flex justify-center">
+        <div class="phone-frame w-[300px]">
+          <div class="phone-notch"></div>
+          <div class="phone-screen h-[560px] px-4 pt-10 pb-4">
+            <p class="text-xs text-ink-400" data-i18n="mock.home.hi">Сәлем, Алихан</p>
+            <p class="font-display font-bold text-lg text-ink-900" data-i18n="mock.home.grade">7 сынып</p>
+            <div class="mt-4 rounded-2xl bg-gold-500 p-4 text-ink-900">
+              <p class="text-xs font-bold opacity-80" data-i18n="mock.home.goal">БҮГІНГІ МАҚСАТ</p>
+              <p class="font-display font-bold text-lg mt-1" data-i18n="mock.home.topic">Квадрат теңдеулер</p>
+              <p class="text-xs mt-0.5 opacity-80" data-i18n="mock.home.meta">20 минут · 5 сұрақ</p>
+              <div class="mt-3 h-9 rounded-xl bg-ink-900 text-gold-300 text-xs font-bold flex items-center justify-center" data-i18n="mock.home.start">Сабақты бастау</div>
+            </div>
+            <div class="mt-3 grid grid-cols-2 gap-3">
+              <div class="rounded-xl bg-white shadow-card p-3">
+                <p class="text-[10px] text-ink-400" data-i18n="mock.home.streak">Серия</p>
+                <p class="font-display font-bold text-ink-900" data-i18n="mock.home.streakVal">12 күн</p>
+              </div>
+              <div class="rounded-xl bg-white shadow-card p-3">
+                <p class="text-[10px] text-ink-400" data-i18n="mock.home.progress">Прогресс</p>
+                <p class="font-display font-bold text-leaf-600">72%</p>
+              </div>
+            </div>
+            <p class="text-[11px] font-bold text-ink-400 mt-4 mb-2 uppercase tracking-wide" data-i18n="mock.home.subjects">Менің пәндерім</p>
+            <div class="space-y-2.5">
+              <div>
+                <div class="flex justify-between text-xs text-ink-700 mb-1"><span data-i18n="mock.subject.math">Математика</span><span>72%</span></div>
+                <div class="h-1.5 rounded-full bg-ink-100"><div class="h-1.5 rounded-full bg-gold-500" style="width:72%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs text-ink-700 mb-1"><span data-i18n="mock.subject.english">Ағылшын тілі</span><span>84%</span></div>
+                <div class="h-1.5 rounded-full bg-ink-100"><div class="h-1.5 rounded-full bg-leaf-500" style="width:84%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs text-ink-700 mb-1"><span data-i18n="mock.subject.physics">Физика</span><span>61%</span></div>
+                <div class="h-1.5 rounded-full bg-ink-100"><div class="h-1.5 rounded-full bg-gold-300" style="width:61%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI TEACHER PANEL -->
+    <div data-tab-panel="panels" data-tab-value="aiteacher" class="hidden mt-12 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div class="order-2 lg:order-1">
+        <span class="inline-flex w-11 h-11 rounded-2xl bg-gold-500 items-center justify-center text-ink-900 mb-5"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-brain"/></svg></span>
+        <h3 class="font-display font-bold text-2xl md:text-3xl text-white" data-i18n="panels.aiteacher.title">Жауапты бермей, ойлауға жетелейді</h3>
+        <p class="mt-3 text-ink-300 leading-relaxed" data-i18n="panels.aiteacher.text">AI Teacher Сократ әдісімен сөйлеседі: жетекші сұрақтар қойып, баланың өзін шешімге жеткізеді. Диалог тарихы пән бойынша сақталады.</p>
+        <ul class="mt-6 space-y-3 text-ink-200">
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.aiteacher.li1">Streaming жауап, нақты сөйлескендей сезім</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.aiteacher.li2">Жылдам әрекет батырмалары: «Мысал көрсет», «Мені тексер»</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.aiteacher.li3">Сурет/файл тіркеп, тапсырманы жүктеуге болады</span></li>
+        </ul>
+      </div>
+      <div class="order-1 lg:order-2 flex justify-center">
+        <div class="phone-frame w-[300px]">
+          <div class="phone-notch"></div>
+          <div class="phone-screen h-[560px] px-4 pt-10 pb-4 flex flex-col">
+            <div class="flex items-center gap-2 pb-3 border-b border-ink-100">
+              <span class="w-8 h-8 rounded-full bg-gold-500 flex items-center justify-center"><svg viewBox="0 0 24 24" class="w-4 h-4 text-ink-900" width="16" height="16"><use href="#i-brain"/></svg></span>
+              <div class="leading-tight"><p class="text-sm font-bold text-ink-900" data-i18n="mock.ai.name">AI Teacher</p><p class="text-[10px] text-ink-400" data-i18n="mock.subject.math">Математика</p></div>
+            </div>
+            <div class="flex-1 py-3 space-y-2.5 overflow-hidden">
+              <div class="max-w-[80%] bg-white shadow-card rounded-2xl rounded-tl-sm px-3 py-2 text-xs text-ink-700" data-i18n="mock.ai.msg1">Сәлем! Не түсінбей тұрсаң, сұрай бер.</div>
+              <div class="max-w-[80%] ml-auto bg-gold-500 rounded-2xl rounded-tr-sm px-3 py-2 text-xs text-ink-900 font-medium" data-i18n="mock.ai.msg2">2x + 7 = 15 неге олай шешіледі?</div>
+              <div class="max-w-[85%] bg-white shadow-card rounded-2xl rounded-tl-sm px-3 py-2 text-xs text-ink-700" data-i18n="mock.ai.msg3">Келі, қадам-қадаммен. Алдымен теңдеудің екі жағынан да 7-ні азайтайық...</div>
+            </div>
+            <div class="flex gap-1.5 flex-wrap mb-2">
+              <span class="text-[10px] font-semibold px-2.5 py-1.5 rounded-full bg-white border border-ink-100 text-ink-600" data-i18n="mock.ai.chip1">Мысал көрсет</span>
+              <span class="text-[10px] font-semibold px-2.5 py-1.5 rounded-full bg-white border border-ink-100 text-ink-600" data-i18n="mock.ai.chip2">Мені тексер</span>
+            </div>
+            <div class="h-10 rounded-full bg-white border border-ink-100 flex items-center px-3 gap-2">
+              <span class="text-xs text-ink-300 flex-1" data-i18n="mock.ai.placeholder">Хабарлама жазу...</span>
+              <svg viewBox="0 0 24 24" class="w-4 h-4 text-gold-600" width="16" height="16"><use href="#i-mic"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMERA PANEL -->
+    <div data-tab-panel="panels" data-tab-value="camera" class="hidden mt-12 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div class="order-2 lg:order-1">
+        <span class="inline-flex w-11 h-11 rounded-2xl bg-leaf-500 items-center justify-center text-white mb-5"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-camera"/></svg></span>
+        <h3 class="font-display font-bold text-2xl md:text-3xl text-white" data-i18n="panels.camera.title">Дәптердегі есепті камераға түсіріңіз</h3>
+        <p class="mt-3 text-ink-300 leading-relaxed" data-i18n="panels.camera.text">AI қолжазба немесе баспа есепті таниды, растап алады және қадам-қадаммен шешуге көмектеседі — жауапты көрсетпей тек кеңес беру режимі де бар.</p>
+        <ul class="mt-6 space-y-3 text-ink-200">
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-leaf-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.camera.li1">OCR + vision-model арқылы дәл тану</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-leaf-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.camera.li2">«Түсіндір», «Бірге шешейік», «Жауабымды тексер»</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-leaf-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.camera.li3">«Жауапты көрсетпе, тек кеңес бер» тумблері</span></li>
+        </ul>
+      </div>
+      <div class="order-1 lg:order-2 flex justify-center">
+        <div class="phone-frame w-[300px]">
+          <div class="phone-notch"></div>
+          <div class="phone-screen h-[560px] relative overflow-hidden">
+            <img src="Photo/4f19a36210f8349782ade54489054a95.jpg" alt="" class="absolute inset-0 w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-ink-900/45"></div>
+            <div class="absolute inset-6 top-16 bottom-32 border-2 border-gold-400 rounded-2xl" style="box-shadow:0 0 0 999px rgba(28,20,12,.35)"></div>
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl px-3 py-1.5 font-display font-bold text-ink-900 shadow-lift">2x + 7 = 15</div>
+            <div class="absolute bottom-0 inset-x-0 bg-cream rounded-t-3xl p-4">
+              <p class="text-[10px] font-bold text-ink-400 uppercase tracking-wide" data-i18n="mock.camera.recognized">Танылды</p>
+              <p class="font-display font-bold text-ink-900">2x + 7 = 15</p>
+              <div class="mt-3 grid grid-cols-2 gap-2">
+                <div class="h-9 rounded-xl bg-gold-500 text-ink-900 text-xs font-bold flex items-center justify-center" data-i18n="mock.camera.explain">Түсіндір</div>
+                <div class="h-9 rounded-xl bg-white border border-ink-200 text-ink-700 text-xs font-bold flex items-center justify-center" data-i18n="mock.camera.solve">Бірге шешейік</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VOICE PANEL -->
+    <div data-tab-panel="panels" data-tab-value="voice" class="hidden mt-12 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div class="order-2 lg:order-1">
+        <span class="inline-flex w-11 h-11 rounded-2xl bg-ink-800 border border-white/10 items-center justify-center text-gold-400 mb-5"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-mic"/></svg></span>
+        <h3 class="font-display font-bold text-2xl md:text-3xl text-white" data-i18n="panels.voice.title">Дауысымен сөйлесіп үйренеді</h3>
+        <p class="mt-3 text-ink-300 leading-relaxed" data-i18n="panels.voice.text">Оқушы сұрақты дауыстап қояды, AI дауыспен жауап береді — тыңдау және сөйлеу дағдысы бір мезетте дамиды, емтиханға дайындық жылдамдайды.</p>
+        <ul class="mt-6 space-y-3 text-ink-200">
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.voice.li1">Режимдер: Оқытушы, Репетитор, Практика тілі, Емтихан</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.voice.li2">Нақты уақытта транскрипция</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.voice.li3">Low-latency дауыс, табиғи қазақша интонация</span></li>
+        </ul>
+      </div>
+      <div class="order-1 lg:order-2 flex justify-center">
+        <div class="phone-frame w-[300px]">
+          <div class="phone-notch"></div>
+          <div class="phone-screen h-[560px] px-4 pt-10 pb-6 flex flex-col items-center justify-between bg-ink-900">
+            <p class="text-xs text-ink-400 self-start" data-i18n="mock.voice.title">Voice Teacher</p>
+            <div class="relative w-36 h-36 rounded-full bg-gradient-to-br from-gold-400 to-leaf-500 flex items-center justify-center">
+              <div class="absolute inset-0 rounded-full border border-gold-300/40 animate-ping" style="animation-duration:2.2s"></div>
+              <svg viewBox="0 0 24 24" class="w-10 h-10 text-ink-900" width="40" height="40"><use href="#i-mic"/></svg>
+            </div>
+            <div class="flex items-end gap-1 h-8">
+              <span class="w-1.5 rounded-full bg-gold-400" style="height:40%"></span>
+              <span class="w-1.5 rounded-full bg-gold-400" style="height:80%"></span>
+              <span class="w-1.5 rounded-full bg-gold-400" style="height:55%"></span>
+              <span class="w-1.5 rounded-full bg-gold-400" style="height:100%"></span>
+              <span class="w-1.5 rounded-full bg-gold-400" style="height:65%"></span>
+              <span class="w-1.5 rounded-full bg-gold-400" style="height:30%"></span>
+            </div>
+            <p class="text-xs text-ink-300" data-i18n="mock.voice.listening">Тыңдап тұрмын...</p>
+            <div class="flex gap-2">
+              <span class="text-[10px] px-2.5 py-1 rounded-full bg-white/10 text-ink-200" data-i18n="mock.voice.mode1">Репетитор</span>
+              <span class="text-[10px] px-2.5 py-1 rounded-full bg-gold-500 text-ink-900 font-bold" data-i18n="mock.voice.mode2">Оқытушы</span>
+              <span class="text-[10px] px-2.5 py-1 rounded-full bg-white/10 text-ink-200" data-i18n="mock.voice.mode3">Емтихан</span>
+            </div>
+            <div class="w-14 h-14 rounded-full bg-red-500 flex items-center justify-center rotate-[135deg]">
+              <svg viewBox="0 0 24 24" class="w-6 h-6 text-white" width="24" height="24"><use href="#i-phone"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRESS PANEL -->
+    <div data-tab-panel="panels" data-tab-value="progress" class="hidden mt-12 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div class="order-2 lg:order-1">
+        <span class="inline-flex w-11 h-11 rounded-2xl bg-gold-500 items-center justify-center text-ink-900 mb-5"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-trend"/></svg></span>
+        <h3 class="font-display font-bold text-2xl md:text-3xl text-white" data-i18n="panels.progress.title">Әлсіз тақырыпты бірден көреді</h3>
+        <p class="mt-3 text-ink-300 leading-relaxed" data-i18n="panels.progress.text">Жалпы деңгей мен апталық динамика, пән/тақырып бойынша егжей-тегжейлі бөлу — әлсіз тақырыптар автоматты анықталып, AI Teacher-ге сілтеме беріледі.</p>
+        <ul class="mt-6 space-y-3 text-ink-200">
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.progress.li1">Жалпы деңгей % және апталық динамика</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.progress.li2">Тақырып бойынша егжей-тегжейлі бөлу</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.progress.li3">Бір басу — тікелей AI Teacher-мен жаттығу</span></li>
+        </ul>
+      </div>
+      <div class="order-1 lg:order-2 flex justify-center">
+        <div class="phone-frame w-[300px]">
+          <div class="phone-notch"></div>
+          <div class="phone-screen h-[560px] px-4 pt-10 pb-4">
+            <p class="font-display font-bold text-ink-900" data-i18n="mock.progress.title">Прогресс</p>
+            <div class="mt-4 flex items-center gap-4">
+              <svg viewBox="0 0 120 120" width="88" height="88">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#F2ECE1" stroke-width="12"/>
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#E38B1F" stroke-width="12" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="82" transform="rotate(-90 60 60)"/>
+              </svg>
+              <div>
+                <p class="font-display font-bold text-2xl text-ink-900">74%</p>
+                <p class="text-xs text-ink-500" data-i18n="mock.progress.overall">жалпы деңгей</p>
+              </div>
+            </div>
+            <div class="mt-5 space-y-2.5">
+              <div>
+                <div class="flex justify-between text-xs text-ink-700 mb-1"><span data-i18n="mock.subject.math">Математика</span><span>72%</span></div>
+                <div class="h-1.5 rounded-full bg-ink-100"><div class="h-1.5 rounded-full bg-gold-500" style="width:72%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs text-ink-700 mb-1"><span data-i18n="mock.subject.english">Ағылшын тілі</span><span>88%</span></div>
+                <div class="h-1.5 rounded-full bg-ink-100"><div class="h-1.5 rounded-full bg-leaf-500" style="width:88%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs text-ink-700 mb-1"><span data-i18n="mock.subject.physics">Физика</span><span>61%</span></div>
+                <div class="h-1.5 rounded-full bg-ink-100"><div class="h-1.5 rounded-full bg-red-400" style="width:61%"></div></div>
+              </div>
+            </div>
+            <div class="mt-4 rounded-xl bg-red-50 border border-red-100 p-3">
+              <p class="text-[10px] font-bold text-red-500 uppercase" data-i18n="mock.progress.weak">Әлсіз тақырып</p>
+              <p class="text-xs text-ink-700 mt-0.5" data-i18n="mock.progress.weakTopic">Физика — Механика · 42%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PARENT PANEL -->
+    <div data-tab-panel="panels" data-tab-value="parent" class="hidden mt-12 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div class="order-2 lg:order-1">
+        <span class="inline-flex w-11 h-11 rounded-2xl bg-leaf-500 items-center justify-center text-white mb-5"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-users"/></svg></span>
+        <h3 class="font-display font-bold text-2xl md:text-3xl text-white" data-i18n="panels.parent.title">Ата-анаға — толық анық сурет</h3>
+        <p class="mt-3 text-ink-300 leading-relaxed" data-i18n="panels.parent.text">Баланың жалпы прогресі, апта ішіндегі өзгеріс, әлсіз және күшті тақырыптар — бір экранда. Серия үзілгенде push-хабарландыру келеді.</p>
+        <ul class="mt-6 space-y-3 text-ink-200">
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-leaf-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.parent.li1">Уақыт статистикасы: сабаққа жұмсалған уақыт</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-leaf-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.parent.li2">Әлсіз және күшті тақырыптар тізімі</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-leaf-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.parent.li3">Апталық есеп push-хабарлама түрінде</span></li>
+        </ul>
+      </div>
+      <div class="order-1 lg:order-2 flex justify-center">
+        <div class="phone-frame w-[300px]">
+          <div class="phone-notch"></div>
+          <div class="phone-screen h-[560px] px-4 pt-10 pb-4">
+            <div class="flex items-center gap-2.5">
+              <span class="w-10 h-10 rounded-full bg-gold-200 flex items-center justify-center font-display font-bold text-ink-800">Ә</span>
+              <div><p class="font-display font-bold text-ink-900 text-sm" data-i18n="mock.parent.name">Алихан</p><p class="text-[10px] text-ink-400" data-i18n="mock.home.grade">7 сынып</p></div>
+            </div>
+            <div class="mt-4 rounded-2xl bg-leaf-50 border border-leaf-100 p-4">
+              <div class="flex justify-between items-baseline">
+                <p class="text-[10px] font-bold text-leaf-700 uppercase" data-i18n="mock.parent.progress">Жалпы прогресс</p>
+                <p class="text-xs font-bold text-leaf-600">+8%</p>
+              </div>
+              <p class="font-display font-bold text-2xl text-ink-900 mt-1">76%</p>
+              <svg viewBox="0 0 200 50" class="w-full h-10 mt-1" preserveAspectRatio="none"><polyline points="0,40 30,32 60,35 90,20 120,24 150,10 180,14 200,6" fill="none" stroke="#1F9D55" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="mt-3 grid grid-cols-3 gap-2 text-center">
+              <div class="rounded-xl bg-white shadow-card p-2.5"><p class="font-display font-bold text-ink-900 text-sm">5с 43м</p><p class="text-[9px] text-ink-400" data-i18n="mock.parent.time">Уақыт</p></div>
+              <div class="rounded-xl bg-white shadow-card p-2.5"><p class="font-display font-bold text-ink-900 text-sm">18</p><p class="text-[9px] text-ink-400" data-i18n="mock.parent.lessons">Сабақ</p></div>
+              <div class="rounded-xl bg-white shadow-card p-2.5"><p class="font-display font-bold text-ink-900 text-sm">42</p><p class="text-[9px] text-ink-400" data-i18n="mock.parent.tasks">Тапсырма</p></div>
+            </div>
+            <p class="text-[10px] font-bold text-ink-400 mt-4 mb-2 uppercase" data-i18n="mock.parent.weakTitle">Әлсіз тақырып</p>
+            <div class="rounded-xl bg-red-50 border border-red-100 p-2.5 flex justify-between text-xs">
+              <span class="text-ink-700" data-i18n="mock.parent.weak1">Физика — Механика</span><span class="font-bold text-red-500">42%</span>
+            </div>
+            <p class="text-[10px] font-bold text-ink-400 mt-3 mb-2 uppercase" data-i18n="mock.parent.strongTitle">Күшті тақырып</p>
+            <div class="rounded-xl bg-leaf-50 border border-leaf-100 p-2.5 flex justify-between text-xs">
+              <span class="text-ink-700" data-i18n="mock.parent.strong1">Ағылшын — Грамматика</span><span class="font-bold text-leaf-600">91%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOTIVATION PANEL -->
+    <div data-tab-panel="panels" data-tab-value="motivation" class="hidden mt-12 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div class="order-2 lg:order-1">
+        <span class="inline-flex w-11 h-11 rounded-2xl bg-gold-500 items-center justify-center text-ink-900 mb-5"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-trophy"/></svg></span>
+        <h3 class="font-display font-bold text-2xl md:text-3xl text-white" data-i18n="panels.motivation.title">Ойын арқылы қайта-қайта оралады</h3>
+        <p class="mt-3 text-ink-300 leading-relaxed" data-i18n="panels.motivation.text">XP, деңгейлер және жетістіктер жүйесі оқушыны әр күн сабаққа тартады — оқу үрдісі жалықтырмайды, керісінше құмарлыққа айналады.</p>
+        <ul class="mt-6 space-y-3 text-ink-200">
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.motivation.li1">XP/деңгей жүйесі, деңгей атаулары</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.motivation.li2">Жетістіктер: «100 есеп», «30 күн серия»</span></li>
+          <li class="flex items-start gap-3"><svg viewBox="0 0 24 24" class="w-5 h-5 text-gold-400 mt-0.5 shrink-0" width="20" height="20"><use href="#i-check"/></svg><span data-i18n="panels.motivation.li3">Тіл, хабарландыру және жазылым баптаулары</span></li>
+        </ul>
+      </div>
+      <div class="order-1 lg:order-2 flex justify-center">
+        <div class="phone-frame w-[300px]">
+          <div class="phone-notch"></div>
+          <div class="phone-screen h-[560px] px-4 pt-10 pb-4 bg-ink-900">
+            <div class="rounded-2xl bg-gradient-to-br from-gold-500 to-gold-300 p-4 text-ink-900">
+              <p class="text-xs font-bold opacity-80" data-i18n="mock.motiv.level">LEVEL 18</p>
+              <p class="font-display font-bold text-xl" data-i18n="mock.motiv.title">Explorer</p>
+              <div class="mt-2 h-2 rounded-full bg-ink-900/15"><div class="h-2 rounded-full bg-ink-900" style="width:83%"></div></div>
+              <p class="text-[10px] mt-1 opacity-80">12 450 / 15 000 XP</p>
+            </div>
+            <p class="text-[10px] font-bold text-ink-400 mt-5 mb-2.5 uppercase" data-i18n="mock.motiv.achievements">Жетістіктер</p>
+            <div class="space-y-2.5">
+              <div class="rounded-xl bg-white/5 border border-white/10 p-3 flex items-center gap-3">
+                <span class="w-9 h-9 rounded-lg bg-gold-500 flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" class="w-4.5 h-4.5 text-ink-900" width="18" height="18"><use href="#i-trophy"/></svg></span>
+                <div><p class="text-xs font-bold text-white" data-i18n="mock.motiv.ach1">100 есеп</p><p class="text-[10px] text-ink-400" data-i18n="mock.motiv.ach1sub">100 есеп шығарылды</p></div>
+              </div>
+              <div class="rounded-xl bg-white/5 border border-white/10 p-3 flex items-center gap-3">
+                <span class="w-9 h-9 rounded-lg bg-leaf-500 flex items-center justify-center shrink-0"><svg viewBox="0 0 24 24" class="w-4.5 h-4.5 text-white" width="18" height="18"><use href="#i-star"/></svg></span>
+                <div><p class="text-xs font-bold text-white" data-i18n="mock.motiv.ach2">30 күн серия</p><p class="text-[10px] text-ink-400" data-i18n="mock.motiv.ach2sub">30 күн үздіксіз оқу</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ SUBJECTS ============ -->
+<section id="subjects" class="py-20 md:py-28">
+  <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-10">
+    <div class="max-w-2xl reveal">
+      <span class="text-sm font-bold tracking-wide text-gold-600 uppercase" data-i18n="subjects.eyebrow">Оқу бағдарламасы</span>
+      <h2 class="mt-3 font-display font-bold text-3xl sm:text-4xl text-ink-900" data-i18n="subjects.title">Барлық негізгі пәндер бір жерде</h2>
+      <p class="mt-4 text-lg text-ink-600" data-i18n="subjects.subtitle">5–11 сынып аралығында, ҚР МЖМБС стандартына сай құрылымдалған. Әр тақырып: Теория → Мысал → Тәжірибе → Тексеру.</p>
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 gap-6">
+
+      <div class="reveal card p-7 md:p-8">
+        <div class="flex items-center gap-3">
+          <span class="w-11 h-11 rounded-2xl bg-gold-100 flex items-center justify-center text-gold-600 shrink-0"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-trend"/></svg></span>
+          <h3 class="font-display font-bold text-xl text-ink-900" data-i18n="subjects.math.title">Математика</h3>
+        </div>
+        <dl class="mt-5 space-y-3 text-sm">
+          <div class="flex gap-3"><dt class="shrink-0 w-20 font-bold text-ink-400" data-i18n="subjects.grade1">5–7 сынып</dt><dd class="text-ink-600" data-i18n="subjects.math.g1">Бөлшектер, теңдеулер негізі, геометрия негізі</dd></div>
+          <div class="flex gap-3"><dt class="shrink-0 w-20 font-bold text-ink-400" data-i18n="subjects.grade2">8–9 сынып</dt><dd class="text-ink-600" data-i18n="subjects.math.g2">Квадрат теңдеулер, функциялар, дискриминант</dd></div>
+          <div class="flex gap-3"><dt class="shrink-0 w-20 font-bold text-ink-400" data-i18n="subjects.grade3">10–11 сынып</dt><dd class="text-ink-600" data-i18n="subjects.math.g3">Алгебра, тригонометрия, ЕНТ-ге дайындық</dd></div>
+        </dl>
+      </div>
+
+      <div class="reveal card p-7 md:p-8" style="transition-delay:.06s">
+        <div class="flex items-center gap-3">
+          <span class="w-11 h-11 rounded-2xl bg-leaf-100 flex items-center justify-center text-leaf-600 shrink-0"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-chat"/></svg></span>
+          <h3 class="font-display font-bold text-xl text-ink-900" data-i18n="subjects.eng.title">Ағылшын тілі</h3>
+        </div>
+        <dl class="mt-5 space-y-3 text-sm">
+          <div class="flex gap-3"><dt class="shrink-0 w-20 font-bold text-ink-400" data-i18n="subjects.grade1">5–7 сынып</dt><dd class="text-ink-600" data-i18n="subjects.eng.g1">Негізгі грамматика, сөздік қор</dd></div>
+          <div class="flex gap-3"><dt class="shrink-0 w-20 font-bold text-ink-400" data-i18n="subjects.grade2">8–9 сынып</dt><dd class="text-ink-600" data-i18n="subjects.eng.g2">Тыңдалым, жазылым дағдылары</dd></div>
+          <div class="flex gap-3"><dt class="shrink-0 w-20 font-bold text-ink-400" data-i18n="subjects.grade3">10–11 сынып</dt><dd class="text-ink-600" data-i18n="subjects.eng.g3">IELTS/ЕНТ форматындағы тапсырмалар</dd></div>
+        </dl>
+      </div>
+
+      <div class="reveal card p-7 md:p-8" style="transition-delay:.12s">
+        <div class="flex items-center gap-3">
+          <span class="w-11 h-11 rounded-2xl bg-gold-100 flex items-center justify-center text-gold-600 shrink-0"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-brain"/></svg></span>
+          <h3 class="font-display font-bold text-xl text-ink-900" data-i18n="subjects.phys.title">Физика</h3>
+        </div>
+        <dl class="mt-5 space-y-3 text-sm">
+          <div class="flex gap-3"><dt class="shrink-0 w-20 font-bold text-ink-400" data-i18n="subjects.grade1">5–7 сынып</dt><dd class="text-ink-600" data-i18n="subjects.phys.g1">Негізгі ұғымдар, өлшем бірліктер</dd></div>
+          <div class="flex gap-3"><dt class="shrink-0 w-20 font-bold text-ink-400" data-i18n="subjects.grade2">8–9 сынып</dt><dd class="text-ink-600" data-i18n="subjects.phys.g2">Механика, электр негіздері</dd></div>
+          <div class="flex gap-3"><dt class="shrink-0 w-20 font-bold text-ink-400" data-i18n="subjects.grade3">10–11 сынып</dt><dd class="text-ink-600" data-i18n="subjects.phys.g3">Термодинамика, ЕНТ есептері</dd></div>
+        </dl>
+      </div>
+
+      <div class="reveal card p-7 md:p-8" style="transition-delay:.18s">
+        <div class="flex items-center gap-3">
+          <span class="w-11 h-11 rounded-2xl bg-leaf-100 flex items-center justify-center text-leaf-600 shrink-0"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-book"/></svg></span>
+          <h3 class="font-display font-bold text-xl text-ink-900" data-i18n="subjects.cs.title">Информатика</h3>
+        </div>
+        <dl class="mt-5 space-y-3 text-sm">
+          <div class="flex gap-3"><dt class="shrink-0 w-20 font-bold text-ink-400" data-i18n="subjects.grade1">5–7 сынып</dt><dd class="text-ink-600" data-i18n="subjects.cs.g1">Алгоритм негіздері</dd></div>
+          <div class="flex gap-3"><dt class="shrink-0 w-20 font-bold text-ink-400" data-i18n="subjects.grade2">8–9 сынып</dt><dd class="text-ink-600" data-i18n="subjects.cs.g2">Программалау негіздері (Python)</dd></div>
+          <div class="flex gap-3"><dt class="shrink-0 w-20 font-bold text-ink-400" data-i18n="subjects.grade3">10–11 сынып</dt><dd class="text-ink-600" data-i18n="subjects.cs.g3">Деректер құрылымы, ЕНТ дайындық</dd></div>
+        </dl>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section id="testimonials" class="py-20 md:py-28 bg-sand/60 grain overflow-hidden">
+  <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
+
+    <div class="grid lg:grid-cols-[1fr,340px] gap-8 items-end">
+      <div class="reveal max-w-2xl">
+        <span class="text-sm font-bold tracking-wide text-gold-600 uppercase" data-i18n="testi.eyebrow">Пікірлер</span>
+        <h2 class="mt-3 font-display font-bold text-3xl sm:text-4xl text-ink-900" data-i18n="testi.title">Бірінші пайдаланушылар не дейді</h2>
+        <p class="mt-4 text-lg text-ink-600" data-i18n="testi.subtitle">Видео, жазбаша және аудио пікірлер — карточкаларды оңға-солға тартып қараңыз.</p>
+      </div>
+
+      <!-- 2GIS card -->
+      <a href="#" data-2gis-link target="_blank" rel="noopener" class="reveal card p-5 flex items-center gap-4 border border-[#12A244]/20 hover:shadow-lift transition-shadow duration-300 group" style="transition-delay:.1s">
+        <span class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-white" style="background:#12A244;">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" width="24" height="24"><use href="#i-pin"/></svg>
+        </span>
+        <div class="min-w-0">
+          <p class="font-display font-bold text-ink-900 leading-tight" data-i18n="testi.2gis.title">2GIS-те пікір оқыңыз</p>
+          <p class="text-xs text-ink-500 mt-0.5" data-i18n="testi.2gis.text">Кеңсе картасы мен пікірлер</p>
+        </div>
+        <svg viewBox="0 0 24 24" class="w-5 h-5 ml-auto shrink-0 text-[#12A244] transition-transform duration-300 group-hover:translate-x-1" width="20" height="20"><use href="#i-arrow-right"/></svg>
+      </a>
+    </div>
+
+    <!-- carousel -->
+    <div class="mt-10 reveal" data-carousel>
+      <div data-carousel-track class="carousel-track flex gap-5 overflow-x-auto pb-4" style="cursor:grab;">
+
+        <!-- 1: written -->
+        <article data-carousel-card class="carousel-card shrink-0 w-[280px] sm:w-[320px] card p-6 flex flex-col">
+          <div class="flex items-center gap-3">
+            <span class="w-11 h-11 rounded-full bg-gold-200 flex items-center justify-center font-display font-bold text-ink-800 shrink-0">А</span>
+            <div class="min-w-0"><p class="font-bold text-ink-900 text-sm truncate" data-i18n="testi.p1.name">Айгерім Н.</p><p class="text-xs text-ink-500" data-i18n="testi.p1.role">Ата-ана</p></div>
+            <span class="ml-auto text-[10px] font-bold text-ink-400 uppercase shrink-0" data-i18n="testi.badge.written">Жазбаша</span>
+          </div>
+          <div class="flex gap-0.5 mt-3 text-gold-500">
+            <svg viewBox="0 0 24 24" class="w-4 h-4" width="16" height="16" fill="currentColor"><use href="#i-star"/></svg>
+            <svg viewBox="0 0 24 24" class="w-4 h-4" width="16" height="16" fill="currentColor"><use href="#i-star"/></svg>
+            <svg viewBox="0 0 24 24" class="w-4 h-4" width="16" height="16" fill="currentColor"><use href="#i-star"/></svg>
+            <svg viewBox="0 0 24 24" class="w-4 h-4" width="16" height="16" fill="currentColor"><use href="#i-star"/></svg>
+            <svg viewBox="0 0 24 24" class="w-4 h-4" width="16" height="16" fill="currentColor"><use href="#i-star"/></svg>
+          </div>
+          <p class="mt-3 text-sm text-ink-600 leading-relaxed flex-1" data-i18n="testi.p1.text">Баламның қай тақырыпта қиналып жатқанын бұрын білмейтінбіз. Енді аптасына бір рет кабинетке кіріп, нақты көріп отырамын.</p>
+        </article>
+
+        <!-- 2: video -->
+        <article data-carousel-card data-testimonial-open class="carousel-card shrink-0 w-[280px] sm:w-[320px] card overflow-hidden cursor-pointer group">
+          <div class="relative aspect-[4/5] photo-treat">
+            <img src="Photo/0b24ab6c15e57b322cb5e9f3baf852c1.jpg" alt="" />
+            <span class="absolute top-3 right-3 text-[10px] font-bold px-2 py-1 rounded-full bg-ink-900/60 text-white z-10">0:38</span>
+            <span class="absolute top-3 left-3 text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/90 text-ink-800 uppercase z-10" data-i18n="testi.badge.video">Видео</span>
+            <span class="absolute inset-0 flex items-center justify-center z-10">
+              <span class="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center text-gold-600 shadow-lift transition-transform duration-300 group-hover:scale-110">
+                <svg viewBox="0 0 24 24" class="w-6 h-6 translate-x-0.5" width="24" height="24"><use href="#i-play"/></svg>
+              </span>
+            </span>
+            <div class="absolute bottom-0 inset-x-0 p-4 z-10">
+              <p class="font-bold text-white text-sm" data-i18n="testi.p2.name">Дәулет Қ.</p>
+              <p class="text-xs text-white/80" data-i18n="testi.p2.role">Оқушы, 9 сынып</p>
+            </div>
+          </div>
+          <div data-testimonial-modal class="hidden">
+            <div class="flex items-center gap-3 mb-3">
+              <img src="Photo/0b24ab6c15e57b322cb5e9f3baf852c1.jpg" class="w-14 h-14 rounded-2xl object-cover" alt="" />
+              <div><p class="font-display font-bold text-ink-900" data-i18n="testi.p2.name">Дәулет Қ.</p><p class="text-xs text-ink-500" data-i18n="testi.p2.role">Оқушы, 9 сынып</p></div>
+            </div>
+            <p class="text-xs font-bold text-gold-600 uppercase mb-1.5" data-i18n="testi.modal.videoNote">Видео пікірден үзінді</p>
+            <p class="text-ink-700 leading-relaxed" data-i18n="testi.p2.text">Есепті камерамен түсірдім де, AI маған теңдеуді қадам-қадаммен түсіндірді. Жауапты бермей, өзім тапқызды.</p>
+          </div>
+        </article>
+
+        <!-- 3: audio -->
+        <article data-carousel-card data-testimonial-open class="carousel-card shrink-0 w-[280px] sm:w-[320px] card p-6 flex flex-col cursor-pointer">
+          <div class="flex items-center gap-3">
+            <span class="w-11 h-11 rounded-full bg-ink-900 flex items-center justify-center text-gold-400 shrink-0">
+              <svg viewBox="0 0 24 24" class="w-5 h-5" width="20" height="20"><use href="#i-play"/></svg>
+            </span>
+            <div class="min-w-0"><p class="font-bold text-ink-900 text-sm truncate" data-i18n="testi.p3.name">Сәуле Жұмабекова</p><p class="text-xs text-ink-500" data-i18n="testi.p3.role">Математика мұғалімі</p></div>
+            <span class="ml-auto text-[10px] font-bold text-ink-400 uppercase shrink-0" data-i18n="testi.badge.audio">Аудио</span>
+          </div>
+          <div class="flex items-end gap-1 h-10 mt-4">
+            <span class="w-1.5 rounded-full bg-gold-300" style="height:35%"></span><span class="w-1.5 rounded-full bg-gold-400" style="height:70%"></span><span class="w-1.5 rounded-full bg-gold-500" style="height:50%"></span><span class="w-1.5 rounded-full bg-gold-300" style="height:90%"></span><span class="w-1.5 rounded-full bg-gold-500" style="height:60%"></span><span class="w-1.5 rounded-full bg-gold-400" style="height:40%"></span><span class="w-1.5 rounded-full bg-gold-300" style="height:75%"></span><span class="w-1.5 rounded-full bg-gold-500" style="height:30%"></span>
+            <span class="ml-auto text-xs text-ink-400 self-end shrink-0">0:54</span>
+          </div>
+          <p class="mt-3 text-sm text-ink-600 leading-relaxed flex-1" data-i18n="testi.p3.text">Сыныбымдағы әлсіз тақырыптарды бірден көремін, тапсырманы соған қарай бөлемін. Уақытым едәуір үнемделді.</p>
+          <div data-testimonial-modal class="hidden">
+            <p class="text-xs font-bold text-gold-600 uppercase mb-1.5" data-i18n="testi.modal.audioNote">Аудио пікір мәтіні</p>
+            <p class="text-ink-700 leading-relaxed" data-i18n="testi.p3.text">Сыныбымдағы әлсіз тақырыптарды бірден көремін, тапсырманы соған қарай бөлемін. Уақытым едәуір үнемделді.</p>
+          </div>
+        </article>
+
+        <!-- 4: written -->
+        <article data-carousel-card class="carousel-card shrink-0 w-[280px] sm:w-[320px] card p-6 flex flex-col">
+          <div class="flex items-center gap-3">
+            <span class="w-11 h-11 rounded-full bg-leaf-100 flex items-center justify-center font-display font-bold text-leaf-700 shrink-0">Т</span>
+            <div class="min-w-0"><p class="font-bold text-ink-900 text-sm truncate" data-i18n="testi.p4.name">Тимур Б.</p><p class="text-xs text-ink-500" data-i18n="testi.p4.role">Оқушы, 7 сынып</p></div>
+            <span class="ml-auto text-[10px] font-bold text-ink-400 uppercase shrink-0" data-i18n="testi.badge.written">Жазбаша</span>
+          </div>
+          <div class="flex gap-0.5 mt-3 text-gold-500">
+            <svg viewBox="0 0 24 24" class="w-4 h-4" width="16" height="16" fill="currentColor"><use href="#i-star"/></svg>
+            <svg viewBox="0 0 24 24" class="w-4 h-4" width="16" height="16" fill="currentColor"><use href="#i-star"/></svg>
+            <svg viewBox="0 0 24 24" class="w-4 h-4" width="16" height="16" fill="currentColor"><use href="#i-star"/></svg>
+            <svg viewBox="0 0 24 24" class="w-4 h-4" width="16" height="16" fill="currentColor"><use href="#i-star"/></svg>
+            <svg viewBox="0 0 24 24" class="w-4 h-4" width="16" height="16" fill="currentColor"><use href="#i-star"/></svg>
+          </div>
+          <p class="mt-3 text-sm text-ink-600 leading-relaxed flex-1" data-i18n="testi.p4.text">Дауыс режимі ұнайды — жаттанды емес, шынымен сөйлескендей сезім бар. Ағылшыннан сөйлеу дағдым жақсарды.</p>
+        </article>
+
+        <!-- 5: video -->
+        <article data-carousel-card data-testimonial-open class="carousel-card shrink-0 w-[280px] sm:w-[320px] card overflow-hidden cursor-pointer group">
+          <div class="relative aspect-[4/5] photo-treat">
+            <img src="Photo/f6fdf5febc444da445b8e30b9c12f5ce.jpg" alt="" />
+            <span class="absolute top-3 right-3 text-[10px] font-bold px-2 py-1 rounded-full bg-ink-900/60 text-white z-10">1:12</span>
+            <span class="absolute top-3 left-3 text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/90 text-ink-800 uppercase z-10" data-i18n="testi.badge.video">Видео</span>
+            <span class="absolute inset-0 flex items-center justify-center z-10">
+              <span class="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center text-gold-600 shadow-lift transition-transform duration-300 group-hover:scale-110">
+                <svg viewBox="0 0 24 24" class="w-6 h-6 translate-x-0.5" width="24" height="24"><use href="#i-play"/></svg>
+              </span>
+            </span>
+            <div class="absolute bottom-0 inset-x-0 p-4 z-10">
+              <p class="font-bold text-white text-sm" data-i18n="testi.p5.name">Мадина Қ.</p>
+              <p class="text-xs text-white/80" data-i18n="testi.p5.role">Оқушы, 8 сынып</p>
+            </div>
+          </div>
+          <div data-testimonial-modal class="hidden">
+            <div class="flex items-center gap-3 mb-3">
+              <img src="Photo/f6fdf5febc444da445b8e30b9c12f5ce.jpg" class="w-14 h-14 rounded-2xl object-cover" alt="" />
+              <div><p class="font-display font-bold text-ink-900" data-i18n="testi.p5.name">Мадина Қ.</p><p class="text-xs text-ink-500" data-i18n="testi.p5.role">Оқушы, 8 сынып</p></div>
+            </div>
+            <p class="text-xs font-bold text-gold-600 uppercase mb-1.5" data-i18n="testi.modal.videoNote">Видео пікірден үзінді</p>
+            <p class="text-ink-700 leading-relaxed" data-i18n="testi.p5.text">Алдымен қиын болды, бірақ AI ұстаз ашуланбай, қайта-қайта түсіндірді. Енді математикадан қорықпаймын.</p>
+          </div>
+        </article>
+
+        <!-- 6: audio -->
+        <article data-carousel-card data-testimonial-open class="carousel-card shrink-0 w-[280px] sm:w-[320px] card p-6 flex flex-col cursor-pointer">
+          <div class="flex items-center gap-3">
+            <span class="w-11 h-11 rounded-full bg-ink-900 flex items-center justify-center text-gold-400 shrink-0">
+              <svg viewBox="0 0 24 24" class="w-5 h-5" width="20" height="20"><use href="#i-play"/></svg>
+            </span>
+            <div class="min-w-0"><p class="font-bold text-ink-900 text-sm truncate" data-i18n="testi.p6.name">Гүлнара Ахметова</p><p class="text-xs text-ink-500" data-i18n="testi.p6.role">Ата-ана, 2 бала</p></div>
+            <span class="ml-auto text-[10px] font-bold text-ink-400 uppercase shrink-0" data-i18n="testi.badge.audio">Аудио</span>
+          </div>
+          <div class="flex items-end gap-1 h-10 mt-4">
+            <span class="w-1.5 rounded-full bg-leaf-300" style="height:45%"></span><span class="w-1.5 rounded-full bg-leaf-400" style="height:80%"></span><span class="w-1.5 rounded-full bg-leaf-500" style="height:35%"></span><span class="w-1.5 rounded-full bg-leaf-300" style="height:65%"></span><span class="w-1.5 rounded-full bg-leaf-500" style="height:95%"></span><span class="w-1.5 rounded-full bg-leaf-400" style="height:50%"></span><span class="w-1.5 rounded-full bg-leaf-300" style="height:30%"></span><span class="w-1.5 rounded-full bg-leaf-500" style="height:70%"></span>
+            <span class="ml-auto text-xs text-ink-400 self-end shrink-0">1:05</span>
+          </div>
+          <p class="mt-3 text-sm text-ink-600 leading-relaxed flex-1" data-i18n="testi.p6.text">Екі балам да пайдаланады. Ұлымның физикадан үлгерімі бір айда 20 пайызға өсті.</p>
+          <div data-testimonial-modal class="hidden">
+            <p class="text-xs font-bold text-gold-600 uppercase mb-1.5" data-i18n="testi.modal.audioNote">Аудио пікір мәтіні</p>
+            <p class="text-ink-700 leading-relaxed" data-i18n="testi.p6.text">Екі балам да пайдаланады. Ұлымның физикадан үлгерімі бір айда 20 пайызға өсті.</p>
+          </div>
+        </article>
+
+      </div>
+
+      <div class="mt-2 flex items-center justify-center gap-3">
+        <button type="button" data-carousel-prev aria-label="Алдыңғы" data-i18n-aria="a11y.prev" class="w-11 h-11 rounded-full border border-ink-200 bg-white flex items-center justify-center text-ink-700 hover:border-gold-500 hover:text-gold-600 transition-colors">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" width="20" height="20"><use href="#i-chevron-left"/></svg>
+        </button>
+        <button type="button" data-carousel-next aria-label="Келесі" data-i18n-aria="a11y.next" class="w-11 h-11 rounded-full border border-ink-200 bg-white flex items-center justify-center text-ink-700 hover:border-gold-500 hover:text-gold-600 transition-colors">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" width="20" height="20"><use href="#i-chevron-right"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ SECURITY ============ -->
+<section id="security" class="py-20 md:py-28">
+  <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-10">
+    <div class="grid lg:grid-cols-[1fr,1.2fr] gap-12 lg:gap-16 items-center">
+      <div class="reveal">
+        <span class="text-sm font-bold tracking-wide text-leaf-600 uppercase" data-i18n="security.eyebrow">Сенімділік</span>
+        <h2 class="mt-3 font-display font-bold text-3xl sm:text-4xl text-ink-900" data-i18n="security.title">Қауіпсіздік — басты басымдық</h2>
+        <p class="mt-4 text-lg text-ink-600" data-i18n="security.subtitle">Балалармен жұмыс істейтіндіктен, деректерді қорғауды бірінші орынға қоямыз.</p>
+        <a href="https://wa.me/77770464141" target="_blank" rel="noopener" class="btn btn-dark h-12 px-6 mt-7 text-sm">
+          <span data-i18n="security.cta">Сұрақ қою</span>
+          <svg viewBox="0 0 24 24" class="w-4.5 h-4.5" width="18" height="18"><use href="#i-arrow-right"/></svg>
+        </a>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-5">
+        <div class="reveal card p-6">
+          <span class="w-11 h-11 rounded-2xl bg-leaf-100 flex items-center justify-center text-leaf-600"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-shield"/></svg></span>
+          <p class="mt-4 text-sm text-ink-700 leading-relaxed" data-i18n="security.item1">ҚР «Дербес деректер туралы» заңына сәйкес жұмыс істейміз</p>
+        </div>
+        <div class="reveal card p-6" style="transition-delay:.06s">
+          <span class="w-11 h-11 rounded-2xl bg-gold-100 flex items-center justify-center text-gold-600"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-users"/></svg></span>
+          <p class="mt-4 text-sm text-ink-700 leading-relaxed" data-i18n="security.item2">Тіркелу кезінде ата-ана келісімі міндетті түрде алынады</p>
+        </div>
+        <div class="reveal card p-6" style="transition-delay:.12s">
+          <span class="w-11 h-11 rounded-2xl bg-gold-100 flex items-center justify-center text-gold-600"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-chat"/></svg></span>
+          <p class="mt-4 text-sm text-ink-700 leading-relaxed" data-i18n="security.item3">AI Teacher диалогтары зиянды контентке қосымша модерациядан өтеді</p>
+        </div>
+        <div class="reveal card p-6" style="transition-delay:.18s">
+          <span class="w-11 h-11 rounded-2xl bg-leaf-100 flex items-center justify-center text-leaf-600"><svg viewBox="0 0 24 24" class="w-5.5 h-5.5" width="22" height="22"><use href="#i-check"/></svg></span>
+          <p class="mt-4 text-sm text-ink-700 leading-relaxed" data-i18n="security.item4">Барлық трафик HTTPS арқылы қорғалған, деректер шифрланып сақталады</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-20 md:py-28 bg-sand/60 grain">
+  <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
+    <div class="max-w-2xl reveal">
+      <span class="text-sm font-bold tracking-wide text-gold-600 uppercase" data-i18n="faq.eyebrow">Сұрақ-жауап</span>
+      <h2 class="mt-3 font-display font-bold text-3xl sm:text-4xl text-ink-900" data-i18n="faq.title">Жиі қойылатын сұрақтар</h2>
+    </div>
+
+    <div class="mt-10 max-w-3xl reveal" data-faq-group>
+      <div class="faq-item border-b border-ink-200" data-open="true">
+        <button type="button" class="faq-trigger w-full flex items-center justify-between gap-4 py-5 text-left">
+          <span class="font-display font-bold text-lg text-ink-900" data-i18n="faq.q1.q">Платформа қандай тілдерде жұмыс істейді?</span>
+          <svg viewBox="0 0 24 24" class="faq-chevron w-5 h-5 text-gold-600 shrink-0" width="20" height="20"><use href="#i-chevron-down"/></svg>
+        </button>
+        <div class="faq-panel"><div><p class="pb-5 text-ink-600 leading-relaxed" data-i18n="faq.q1.a">Қазақ және орыс тілдерінде толық қолдау бар. Интерфейс пен AI Teacher екі тілде де бірдей сапалы жұмыс істейді.</p></div></div>
+      </div>
+      <div class="faq-item border-b border-ink-200" data-open="false">
+        <button type="button" class="faq-trigger w-full flex items-center justify-between gap-4 py-5 text-left">
+          <span class="font-display font-bold text-lg text-ink-900" data-i18n="faq.q2.q">Қай сыныптарға арналған?</span>
+          <svg viewBox="0 0 24 24" class="faq-chevron w-5 h-5 text-gold-600 shrink-0" width="20" height="20"><use href="#i-chevron-down"/></svg>
+        </button>
+        <div class="faq-panel"><div><p class="pb-5 text-ink-600 leading-relaxed" data-i18n="faq.q2.a">5–11 сынып оқушыларына арналған, негізгі пәндер: математика, ағылшын тілі, физика, информатика.</p></div></div>
+      </div>
+      <div class="faq-item border-b border-ink-200" data-open="false">
+        <button type="button" class="faq-trigger w-full flex items-center justify-between gap-4 py-5 text-left">
+          <span class="font-display font-bold text-lg text-ink-900" data-i18n="faq.q3.q">AI бала үшін жауапты бірден бере ме?</span>
+          <svg viewBox="0 0 24 24" class="faq-chevron w-5 h-5 text-gold-600 shrink-0" width="20" height="20"><use href="#i-chevron-down"/></svg>
+        </button>
+        <div class="faq-panel"><div><p class="pb-5 text-ink-600 leading-relaxed" data-i18n="faq.q3.a">Жоқ. AI ҰСТАЗ Сократ әдісін қолданады — жауапты бермей, жетекші сұрақтармен балаға өз бетімен ойлауға көмектеседі. Камера режимінде «жауапты көрсетпей, тек кеңес бер» тумблерін қосуға болады.</p></div></div>
+      </div>
+      <div class="faq-item border-b border-ink-200" data-open="false">
+        <button type="button" class="faq-trigger w-full flex items-center justify-between gap-4 py-5 text-left">
+          <span class="font-display font-bold text-lg text-ink-900" data-i18n="faq.q4.q">Ата-ана баланың прогресін қалай көреді?</span>
+          <svg viewBox="0 0 24 24" class="faq-chevron w-5 h-5 text-gold-600 shrink-0" width="20" height="20"><use href="#i-chevron-down"/></svg>
+        </button>
+        <div class="faq-panel"><div><p class="pb-5 text-ink-600 leading-relaxed" data-i18n="faq.q4.a">Ата-ана кабинетінде баланың жалпы прогресі, әлсіз/күшті тақырыптары және апталық белсенділігі нақты сандармен көрсетіледі, аптасына push-хабарлама келіп тұрады.</p></div></div>
+      </div>
+      <div class="faq-item border-b border-ink-200" data-open="false">
+        <button type="button" class="faq-trigger w-full flex items-center justify-between gap-4 py-5 text-left">
+          <span class="font-display font-bold text-lg text-ink-900" data-i18n="faq.q5.q">Мектепке қалай қосылуға болады?</span>
+          <svg viewBox="0 0 24 24" class="faq-chevron w-5 h-5 text-gold-600 shrink-0" width="20" height="20"><use href="#i-chevron-down"/></svg>
+        </button>
+        <div class="faq-panel"><div><p class="pb-5 text-ink-600 leading-relaxed" data-i18n="faq.q5.a">Мектеп әкімшілігі бізбен байланысады, сыныптар мен мұғалімдерді жүйеге қосады және мектеп деңгейінде толық аналитика мен «тәуекел аймағы» есебін алады.</p></div></div>
+      </div>
+      <div class="faq-item border-b border-ink-200" data-open="false">
+        <button type="button" class="faq-trigger w-full flex items-center justify-between gap-4 py-5 text-left">
+          <span class="font-display font-bold text-lg text-ink-900" data-i18n="faq.q6.q">Балаларымның деректері қауіпсіз бе?</span>
+          <svg viewBox="0 0 24 24" class="faq-chevron w-5 h-5 text-gold-600 shrink-0" width="20" height="20"><use href="#i-chevron-down"/></svg>
+        </button>
+        <div class="faq-panel"><div><p class="pb-5 text-ink-600 leading-relaxed" data-i18n="faq.q6.a">Иә. Тіркелу кезінде ата-ана келісімі алынады, барлық деректер шифрланып сақталады, диалогтар зиянды контентке қосымша модерациядан өтеді.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="cta" class="relative py-20 md:py-28 bg-ink-900 grain overflow-hidden">
+  <div class="pointer-events-none absolute inset-0 -z-0">
+    <div class="absolute -top-20 left-1/3 w-[500px] h-[500px] rounded-full bg-gold-500/15 blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-leaf-500/15 blur-3xl"></div>
+  </div>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-10 text-center relative z-10 reveal">
+    <h2 class="font-display font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight" data-i18n="cta.title">Балаңыздың оқуын бүгіннен бастап жеңілдетіңіз</h2>
+    <p class="mt-5 text-lg text-ink-300 max-w-xl mx-auto" data-i18n="cta.subtitle">Тіркелу тегін, алғашқы сабақты дәл қазір бастауға болады.</p>
+    <div class="mt-9 flex flex-col sm:flex-row gap-3.5 justify-center">
+      <a href="https://wa.me/77770464141" target="_blank" rel="noopener" class="btn btn-primary h-14 px-8 text-base">
+        <span data-i18n="cta.button">WhatsApp арқылы бастау</span>
+        <svg viewBox="0 0 24 24" class="w-5 h-5" width="20" height="20"><use href="#i-arrow-right"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION_ANCHOR: sections will be inserted here -->
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink-900 text-ink-100 grain">
+  <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-10 py-16 relative z-10">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div class="lg:col-span-1">
+        <div class="flex items-center gap-2.5">
+          <span class="w-10 h-10 rounded-2xl bg-gold-500 flex items-center justify-center">
+            <svg viewBox="0 0 24 24" class="w-5.5 h-5.5 text-ink-900" width="22" height="22"><use href="#i-brain"/></svg>
+          </span>
+          <span class="font-display font-bold text-lg text-white">AI ҰСТАЗ</span>
+        </div>
+        <p class="mt-4 text-ink-300 text-sm leading-relaxed max-w-xs" data-i18n="footer.tagline">Әр балаға — жеке ЖИ ұстаз. Кез келген уақытта, кез келген жерде.</p>
+      </div>
+      <div>
+        <h4 class="font-display font-bold text-white mb-4" data-i18n="footer.colSections">Бөлімдер</h4>
+        <ul class="space-y-2.5 text-sm text-ink-300">
+          <li><a href="#features" class="hover:text-gold-400 transition-colors" data-i18n="nav.features">Мүмкіндіктер</a></li>
+          <li><a href="#panels" class="hover:text-gold-400 transition-colors" data-i18n="nav.howItWorks">Қалай жұмыс істейді</a></li>
+          <li><a href="#subjects" class="hover:text-gold-400 transition-colors" data-i18n="nav.subjects">Пәндер</a></li>
+          <li><a href="#testimonials" class="hover:text-gold-400 transition-colors" data-i18n="nav.testimonials">Пікірлер</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold text-white mb-4" data-i18n="footer.colCompany">Ақпарат</h4>
+        <ul class="space-y-2.5 text-sm text-ink-300">
+          <li><a href="#security" class="hover:text-gold-400 transition-colors" data-i18n="nav.security">Қауіпсіздік</a></li>
+          <li><a href="#faq" class="hover:text-gold-400 transition-colors" data-i18n="nav.faq">Сұрақ-жауап</a></li>
+          <li><a href="#cta" class="hover:text-gold-400 transition-colors" data-i18n="footer.school">Мектептерге</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold text-white mb-4" data-i18n="footer.colContact">Байланыс</h4>
+        <a href="https://wa.me/77770464141" target="_blank" rel="noopener" class="flex items-center gap-2.5 text-ink-100 hover:text-leaf-400 transition-colors font-semibold">
+          <svg viewBox="0 0 24 24" class="w-4.5 h-4.5" width="18" height="18"><use href="#i-phone"/></svg>
+          +7 777 046 4141
+        </a>
+        <p class="text-xs text-ink-400 mt-1.5" data-i18n="footer.whatsappNote">WhatsApp арқылы жазыңыз</p>
+      </div>
+    </div>
+    <div class="mt-14 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-ink-400">
+      <p data-i18n="footer.copyright">© 2026 AI ҰСТАЗ. Барлық құқықтар қорғалған.</p>
+      <p data-i18n="footer.madeIn">Қазақстанда жасалған</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ WHATSAPP FLOAT ============ -->
+<a href="https://wa.me/77770464141" target="_blank" rel="noopener" aria-label="WhatsApp арқылы жазу" data-i18n-aria="a11y.whatsapp" class="wa-float group">
+  <span class="wa-ring wa-ring-1"></span>
+  <span class="wa-ring wa-ring-2"></span>
+  <span class="relative rounded-full bg-gradient-to-br from-wa to-leaf-600 flex items-center justify-center shadow-lift transition-transform duration-300 group-hover:scale-110" style="width:60px;height:60px;">
+    <svg viewBox="0 0 32 32" width="30" height="30" fill="#fff"><path d="M16.02 3C9.4 3 4 8.4 4 15.02c0 2.36.66 4.56 1.8 6.44L4 29l7.72-1.75a11.98 11.98 0 004.3.8c6.62 0 12.02-5.4 12.02-12.03C28.04 8.4 22.64 3 16.02 3zm0 21.86c-1.5 0-2.96-.4-4.24-1.15l-.3-.18-4.58 1.04 1.06-4.46-.2-.32a9.83 9.83 0 01-1.55-5.27c0-5.46 4.45-9.9 9.92-9.9 5.46 0 9.9 4.44 9.9 9.9 0 5.47-4.44 9.34-9.99 9.34zm5.44-7.4c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.24-.46-2.37-1.47-.87-.78-1.46-1.74-1.63-2.04-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.87 1.22 3.07.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.13-.27-.2-.57-.35z"/></svg>
+  </span>
+</a>
+
+<script>
+(function(){
+  var I18N = {
+    kk: {},
+    ru: {}
+  };
+  window.__I18N = I18N;
+  window.__LANG_INIT_PENDING = true;
+})();
+</script>
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
