@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { t, type Lang } from "@/lib/i18n";
 import LangToggle from "@/components/LangToggle";
+import PasswordInput from "@/components/PasswordInput";
 
 type Role = "STUDENT" | "PARENT" | "TEACHER" | "SCHOOL_ADMIN";
 
@@ -125,13 +126,16 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
           />
 
           <label className="block text-sm font-semibold text-ink-700 mb-1.5">{tt.auth.password}</label>
-          <input
-            type="password"
-            className="w-full h-12 rounded-xl border border-ink-200 px-4 mb-4 focus:border-gold-500 outline-none"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className="mb-4">
+            <PasswordInput
+              value={password}
+              onChange={setPassword}
+              required
+              autoComplete="new-password"
+              ariaShowLabel={tt.auth.showPassword}
+              ariaHideLabel={tt.auth.hidePassword}
+            />
+          </div>
 
           {role === "STUDENT" && (
             <>
