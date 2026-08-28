@@ -3,8 +3,22 @@ import Anthropic from "@anthropic-ai/sdk";
 export type Lang = "kk" | "ru";
 export type ChatTurn = { role: "user" | "assistant"; content: string };
 
-export function isAiConfigured() {
+type ChatProvider = "anthropic" | "deepseek" | null;
+
+function chatProvider(): ChatProvider {
+  if (process.env.ANTHROPIC_API_KEY) return "anthropic";
+  if (process.env.DEEPSEEK_API_KEY) return "deepseek";
+  return null;
+}
+
+// Vision (camera problem recognition) currently only works via Anthropic —
+// DeepSeek's chat API does not accept image input.
+function visionConfigured() {
   return Boolean(process.env.ANTHROPIC_API_KEY);
+}
+
+export function isAiConfigured() {
+  return chatProvider() !== null;
 }
 
 function systemPrompt(lang: Lang, subjectLabel: string) {
@@ -14,14 +28,16 @@ function systemPrompt(lang: Lang, subjectLabel: string) {
 - Жауапты бөлікке-бөлікке бөл, әр қадамнан кейін оқушының өзінің жалғастыруын сұра.
 - Тек оқушы шынымен қиналып, көмек сұраса ғана толығырақ түсіндір, бірақ соңғы жауапты өзі айтуын күт.
 - Қысқа, жылы, қолдаушы үнде сөйле. Балаға лайық қарапайым тілмен түсіндір.
-- Қате жіберсе — сынама, қайта ойлануға бағыттайтын сұрақ қой.`;
+- Қате жіберсе — сынама, қайта ойлануға бағыттайтын сұрақ қой.
+- Тек кәдімгі мәтінмен жаз: markdown белгілерін (**, #, \`\`\`, тізім сызықшалары) қолданба, эмодзи қоспа.`;
   const ru = `Ты — AI ҰСТАЗ, персональный ИИ-наставник. Предмет: ${subjectLabel}. Общаешься с учеником 5-11 класса на русском языке.
 ПРАВИЛА:
 - Никогда не давай готовый ответ сразу. Используй метод Сократа: задавай наводящие вопросы, подводи ученика к мысли самому.
 - Разбивай объяснение на шаги, после каждого шага спрашивай, что думает ученик дальше.
 - Только если ученик действительно застрял и просит помощи — объясняй подробнее, но дай ему самому сформулировать финальный ответ.
 - Говори коротко, тепло, поддерживающим тоном, простым языком, понятным ребёнку.
-- Если ученик ошибся — не критикуй, задай вопрос, который направит его на переосмысление.`;
+- Если ученик ошибся — не критикуй, задай вопрос, который направит его на переосмысление.
+- Пиши только обычным текстом: не используй markdown-разметку (**, #, \`\`\`, дефисы-списки) и эмодзи.`;
   return lang === "ru" ? ru : kk;
 }
 
@@ -57,23 +73,7 @@ function pickMock(list: string[], seed: number) {
   return list[seed % list.length];
 }
 
-export async function askAiTeacher(opts: {
-  lang: Lang;
-  subjectLabel: string;
-  history: ChatTurn[];
-  message: string;
-}): Promise<{ reply: string; mocked: boolean }> {
-  const { lang, subjectLabel, history, message } = opts;
-
-  if (!isAiConfigured()) {
-    const isFirst = history.length === 0;
-    const seed = message.length + history.length;
-    const reply = isFirst
-      ? pickMock(MOCK_OPENERS[lang], seed)
-      : pickMock(MOCK_REPLIES[lang], seed);
-    return { reply, mocked: true };
-  }
-
+async function askClaude(lang: Lang, subjectLabel: string, history: ChatTurn[], message: string) {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-5",
@@ -86,10 +86,63 @@ export async function askAiTeacher(opts: {
   });
 
   const textBlock = response.content.find((b) => b.type === "text");
+  return textBlock && textBlock.type === "text"
+    ? textBlock.text
+    : lang === "ru" ? "Извини, не смог сформулировать ответ." : "Кешір, жауап құрастыра алмадым.";
+}
+
+async function askDeepSeek(lang: Lang, subjectLabel: string, history: ChatTurn[], message: string) {
+  const res = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: "deepseek-chat",
+      max_tokens: 500,
+      messages: [
+        { role: "system", content: systemPrompt(lang, subjectLabel) },
+        ...history.map((h) => ({ role: h.role, content: h.content })),
+        { role: "user", content: message },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    throw new Error(`DeepSeek API error ${res.status}: ${errText.slice(0, 300)}`);
+  }
+
+  const data = await res.json();
+  const reply = data?.choices?.[0]?.message?.content;
+  return typeof reply === "string" && reply.trim()
+    ? reply
+    : lang === "ru" ? "Извини, не смог сформулировать ответ." : "Кешір, жауап құрастыра алмадым.";
+}
+
+export async function askAiTeacher(opts: {
+  lang: Lang;
+  subjectLabel: string;
+  history: ChatTurn[];
+  message: string;
+}): Promise<{ reply: string; mocked: boolean }> {
+  const { lang, subjectLabel, history, message } = opts;
+  const provider = chatProvider();
+
+  if (!provider) {
+    const isFirst = history.length === 0;
+    const seed = message.length + history.length;
+    const reply = isFirst
+      ? pickMock(MOCK_OPENERS[lang], seed)
+      : pickMock(MOCK_REPLIES[lang], seed);
+    return { reply, mocked: true };
+  }
+
   const reply =
-    textBlock && textBlock.type === "text"
-      ? textBlock.text
-      : lang === "ru" ? "Извини, не смог сформулировать ответ." : "Кешір, жауап құрастыра алмадым.";
+    provider === "anthropic"
+      ? await askClaude(lang, subjectLabel, history, message)
+      : await askDeepSeek(lang, subjectLabel, history, message);
 
   return { reply, mocked: false };
 }
@@ -101,7 +154,7 @@ export async function recognizeProblem(opts: {
   imageBase64: string;
   mediaType: string;
 }): Promise<{ recognized: string; mocked: boolean }> {
-  if (!isAiConfigured()) {
+  if (!visionConfigured()) {
     return { recognized: MOCK_RECOGNIZED, mocked: true };
   }
 
