@@ -6,14 +6,21 @@ import { t, type Lang } from "@/lib/i18n";
 
 type Msg = { id: string; role: string; content: string };
 
+const RECOGNITION_LANG: Record<Lang, string> = { kk: "kk-KZ", ru: "ru-RU" };
+
 export default function VoiceView({ lang, subjects }: { lang: Lang; subjects: Subject[] }) {
   const tt = t(lang);
   const [subjectCode, setSubjectCode] = useState(subjects[0]?.code ?? "math");
+  const subjectCodeRef = useRef(subjectCode);
+  subjectCodeRef.current = subjectCode;
+
   const [messages, setMessages] = useState<Msg[]>([]);
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [supported, setSupported] = useState(true);
+  const [voiceError, setVoiceError] = useState("");
   const recognitionRef = useRef<any>(null);
+  const fellBackRef = useRef(false);
 
   useEffect(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -21,21 +28,92 @@ export default function VoiceView({ lang, subjects }: { lang: Lang; subjects: Su
       setSupported(false);
       return;
     }
+
+    fellBackRef.current = false;
+    const recognition = buildRecognition(SR, RECOGNITION_LANG[lang]);
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.onresult = null;
+      recognition.onerror = null;
+      recognition.onend = null;
+      recognition.onstart = null;
+      try {
+        recognition.abort();
+      } catch {
+        // already stopped
+      }
+      if (recognitionRef.current === recognition) recognitionRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
+  function buildRecognition(SR: any, recogLang: string) {
     const recognition = new SR();
-    recognition.lang = lang === "ru" ? "ru-RU" : "kk-KZ";
+    recognition.lang = recogLang;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
+    recognition.__gotResult = false;
+    recognition.__manualStop = false;
+    recognition.__errorShown = false;
 
+    recognition.onstart = () => {
+      recognition.__gotResult = false;
+      recognition.__manualStop = false;
+      recognition.__errorShown = false;
+      setListening(true);
+    };
     recognition.onresult = (event: any) => {
+      recognition.__gotResult = true;
       const transcript = event.results[0][0].transcript;
       handleUserSpeech(transcript);
     };
-    recognition.onerror = () => setListening(false);
-    recognition.onend = () => setListening(false);
+    recognition.onerror = (event: any) => handleRecognitionError(event?.error, SR, recognition);
+    recognition.onend = () => {
+      setListening(false);
+      // Some browsers end a session silently (no error, no result) instead of firing
+      // a "no-speech" error - surface that too, otherwise the mic button appears to
+      // do nothing at all, which is the exact bug this fix addresses.
+      if (!recognition.__gotResult && !recognition.__manualStop && !recognition.__errorShown) {
+        setVoiceError(tt.voice.errorNoSpeech);
+      }
+    };
+    return recognition;
+  }
 
-    recognitionRef.current = recognition;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang, subjectCode]);
+  function handleRecognitionError(errorCode: string, SR: any, recognition: any) {
+    recognition.__errorShown = true;
+    setListening(false);
+    if (errorCode === "aborted") return;
+
+    if (
+      (errorCode === "language-not-supported" || errorCode === "language-not-available") &&
+      lang === "kk" &&
+      !fellBackRef.current
+    ) {
+      fellBackRef.current = true;
+      const fallback = buildRecognition(SR, "ru-RU");
+      recognitionRef.current = fallback;
+      setVoiceError(tt.voice.errorLangFallback);
+      try {
+        fallback.start();
+      } catch {
+        setVoiceError(tt.voice.errorGeneric);
+      }
+      return;
+    }
+
+    const messages: Record<string, string> = {
+      "not-allowed": tt.voice.errorMicDenied,
+      "service-not-allowed": tt.voice.errorMicDenied,
+      "audio-capture": tt.voice.errorNoMic,
+      "no-speech": tt.voice.errorNoSpeech,
+      network: tt.voice.errorNetwork,
+      "language-not-supported": tt.voice.errorGeneric,
+      "language-not-available": tt.voice.errorGeneric,
+    };
+    setVoiceError(messages[errorCode] ?? tt.voice.errorGeneric);
+  }
 
   function speak(text: string) {
     if (!("speechSynthesis" in window)) return;
@@ -56,26 +134,44 @@ export default function VoiceView({ lang, subjects }: { lang: Lang; subjects: Su
 
   async function handleUserSpeech(transcript: string) {
     setMessages((m) => [...m, { id: "u-" + Date.now(), role: "user", content: transcript }]);
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subjectCode, message: transcript }),
-    });
-    if (!res.ok) return;
-    const data = await res.json();
-    setMessages((m) => [...m, { id: "a-" + Date.now(), role: "assistant", content: data.reply }]);
-    speak(data.reply);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subjectCode: subjectCodeRef.current, message: transcript }),
+      });
+      if (!res.ok) {
+        setVoiceError(tt.voice.errorGeneric);
+        return;
+      }
+      const data = await res.json();
+      setMessages((m) => [...m, { id: "a-" + Date.now(), role: "assistant", content: data.reply }]);
+      speak(data.reply);
+    } catch {
+      setVoiceError(tt.voice.errorNetwork);
+    }
   }
 
   function toggleListening() {
     if (!recognitionRef.current) return;
     if (listening) {
+      recognitionRef.current.__manualStop = true;
       recognitionRef.current.stop();
       setListening(false);
     } else {
+      setVoiceError("");
       window.speechSynthesis?.cancel();
-      recognitionRef.current.start();
-      setListening(true);
+      try {
+        recognitionRef.current.start();
+      } catch {
+        // already running - stop and let onend clear state, user can press again
+        try {
+          recognitionRef.current.stop();
+        } catch {
+          // ignore
+        }
+        setListening(false);
+      }
     }
   }
 
@@ -115,6 +211,8 @@ export default function VoiceView({ lang, subjects }: { lang: Lang; subjects: Su
           </button>
 
           <p className="text-sm text-ink-500 mt-4">{listening ? tt.voice.listening : speaking ? tt.voice.speaking : tt.voice.start}</p>
+
+          {voiceError && <p className="text-sm text-red-500 mt-2 max-w-sm">{voiceError}</p>}
 
           <div className="w-full mt-8 space-y-3 text-left">
             {messages.map((m) => (
