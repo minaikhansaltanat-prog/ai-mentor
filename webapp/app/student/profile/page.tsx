@@ -4,6 +4,7 @@ import { t } from "@/lib/i18n";
 import { db } from "@/lib/db";
 import { levelFromXp } from "@/lib/gamify";
 import Link from "next/link";
+import JoinClassCard from "@/components/JoinClassCard";
 
 const ACHIEVEMENT_PATHS: Record<string, string> = {
   trophy: "M7 4h10v5a5 5 0 01-10 0V4zM7 5H4v2a3 3 0 003 3M17 5h3v2a3 3 0 01-3 3M10 18h4M12 14v4m-3 3h6",
@@ -34,6 +35,10 @@ export default async function ProfilePage() {
     orderBy: { earnedAt: "desc" },
   });
 
+  const classRoom = user.classRoomId
+    ? await db.classRoom.findUnique({ where: { id: user.classRoomId }, include: { school: true } })
+    : null;
+
   const { level, progressInLevel, nextLevelXp, currentLevelFloor } = levelFromXp(user.xp);
   const pct = Math.round((progressInLevel / (nextLevelXp - currentLevelFloor)) * 100);
 
@@ -53,6 +58,15 @@ export default async function ProfilePage() {
           {user.xp} / {nextLevelXp} XP
         </p>
       </div>
+
+      <JoinClassCard
+        lang={lang}
+        classInfo={
+          classRoom
+            ? { name: classRoom.name, schoolName: classRoom.school.name, joinCode: classRoom.joinCode }
+            : null
+        }
+      />
 
       <Link href="/student/works" className="card p-4 mt-5 flex items-center gap-3 hover:shadow-lift transition-shadow">
         <span className="w-10 h-10 rounded-xl bg-leaf-100 flex items-center justify-center text-leaf-600 shrink-0">
