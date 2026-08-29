@@ -19,6 +19,7 @@ export default function VoiceView({ lang, subjects }: { lang: Lang; subjects: Su
   const [speaking, setSpeaking] = useState(false);
   const [supported, setSupported] = useState(true);
   const [voiceError, setVoiceError] = useState("");
+  const [requestingMic, setRequestingMic] = useState(false);
   const recognitionRef = useRef<any>(null);
   const fellBackRef = useRef(false);
 
@@ -152,26 +153,51 @@ export default function VoiceView({ lang, subjects }: { lang: Lang; subjects: Su
     }
   }
 
-  function toggleListening() {
-    if (!recognitionRef.current) return;
+  async function toggleListening() {
+    if (!recognitionRef.current || requestingMic) return;
     if (listening) {
       recognitionRef.current.__manualStop = true;
       recognitionRef.current.stop();
       setListening(false);
-    } else {
-      setVoiceError("");
-      window.speechSynthesis?.cancel();
+      return;
+    }
+
+    setVoiceError("");
+    window.speechSynthesis?.cancel();
+
+    // On some Android browsers, letting SpeechRecognition request the microphone
+    // implicitly is unreliable - explicitly requesting it first forces the native
+    // permission prompt to appear predictably, matching desktop behavior.
+    if (navigator.mediaDevices?.getUserMedia) {
+      setRequestingMic(true);
       try {
-        recognitionRef.current.start();
-      } catch {
-        // already running - stop and let onend clear state, user can press again
-        try {
-          recognitionRef.current.stop();
-        } catch {
-          // ignore
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((track) => track.stop());
+      } catch (err: any) {
+        setRequestingMic(false);
+        const name = err?.name;
+        if (name === "NotAllowedError" || name === "SecurityError") {
+          setVoiceError(tt.voice.errorMicDenied);
+        } else if (name === "NotFoundError" || name === "OverconstrainedError") {
+          setVoiceError(tt.voice.errorNoMic);
+        } else {
+          setVoiceError(tt.voice.errorGeneric);
         }
-        setListening(false);
+        return;
       }
+      setRequestingMic(false);
+    }
+
+    try {
+      recognitionRef.current.start();
+    } catch {
+      // already running - stop and let onend clear state, user can press again
+      try {
+        recognitionRef.current.stop();
+      } catch {
+        // ignore
+      }
+      setListening(false);
     }
   }
 
@@ -199,7 +225,8 @@ export default function VoiceView({ lang, subjects }: { lang: Lang; subjects: Su
         <>
           <button
             onClick={toggleListening}
-            className={`relative w-32 h-32 rounded-full flex items-center justify-center mt-10 transition-colors ${
+            disabled={requestingMic}
+            className={`relative w-32 h-32 rounded-full flex items-center justify-center mt-10 transition-colors disabled:opacity-70 ${
               listening ? "bg-red-500" : "bg-gradient-to-br from-gold-400 to-leaf-500"
             }`}
           >
@@ -210,7 +237,15 @@ export default function VoiceView({ lang, subjects }: { lang: Lang; subjects: Su
             </svg>
           </button>
 
-          <p className="text-sm text-ink-500 mt-4">{listening ? tt.voice.listening : speaking ? tt.voice.speaking : tt.voice.start}</p>
+          <p className="text-sm text-ink-500 mt-4">
+            {requestingMic
+              ? tt.voice.requestingMic
+              : listening
+              ? tt.voice.listening
+              : speaking
+              ? tt.voice.speaking
+              : tt.voice.start}
+          </p>
 
           {voiceError && <p className="text-sm text-red-500 mt-2 max-w-sm">{voiceError}</p>}
 
