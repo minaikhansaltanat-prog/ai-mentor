@@ -13,6 +13,8 @@ export default async function StudentHomePage() {
   const grade = user.grade ?? 7;
 
   const subjects = await db.subject.findMany({
+    where: { gradeMin: { lte: grade }, gradeMax: { gte: grade } },
+    orderBy: { order: "asc" },
     include: {
       topics: {
         where: { gradeMin: { lte: grade }, gradeMax: { gte: grade } },

@@ -162,12 +162,15 @@ model Notification {
 }
 
 model Subject {
-  id     String  @id @default(cuid())
-  code   String  @unique
-  nameKk String
-  nameRu String
-  icon   String  @default("book")
-  topics Topic[]
+  id       String  @id @default(cuid())
+  code     String  @unique
+  nameKk   String
+  nameRu   String
+  icon     String  @default("book")
+  gradeMin Int     @default(0)
+  gradeMax Int     @default(11)
+  order    Int     @default(0)
+  topics   Topic[]
 }
 
 model Topic {

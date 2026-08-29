@@ -13,11 +13,18 @@ export default async function AccountPage() {
   const lang = await getLang();
   const tt = t(lang);
 
-  const [user, subjects, unreadCount] = await Promise.all([
+  const [user, unreadCount] = await Promise.all([
     db.user.findUniqueOrThrow({ where: { id: session.userId } }),
-    db.subject.findMany(),
     db.notification.count({ where: { userId: session.userId, read: false } }),
   ]);
+
+  const subjects = await db.subject.findMany({
+    where:
+      session.role === "STUDENT"
+        ? { gradeMin: { lte: user.grade ?? 7 }, gradeMax: { gte: user.grade ?? 7 } }
+        : undefined,
+    orderBy: { order: "asc" },
+  });
 
   return (
     <AppShell

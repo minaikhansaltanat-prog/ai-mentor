@@ -62,9 +62,10 @@ export async function recordPractice(opts: { studentId: string; topicId: string;
   if (topic?.subject.code === "english") {
     await maybeAwardAchievement(studentId, "english_starter", true);
   }
-  if (topic?.subject.code === "math") {
+  const MATH_FAMILY = ["math", "algebra", "geometry"];
+  if (topic && MATH_FAMILY.includes(topic.subject.code)) {
     const masteredMath = await db.progress.count({
-      where: { studentId, masteryPct: { gte: 80 }, topic: { subject: { code: "math" } } },
+      where: { studentId, masteryPct: { gte: 80 }, topic: { subject: { code: { in: MATH_FAMILY } } } },
     });
     await maybeAwardAchievement(studentId, "math_master", masteredMath >= 3);
   }

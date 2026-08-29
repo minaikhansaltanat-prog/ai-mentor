@@ -12,7 +12,7 @@ const schema = z.object({
   name: z.string().min(2),
   phone: z.string().min(6),
   password: z.string().min(4),
-  grade: z.number().int().min(5).max(11).optional(),
+  grade: z.number().int().min(0).max(11).optional(),
   classCode: z.string().optional(),
   childPhone: z.string().optional(),
   schoolName: z.string().optional(),

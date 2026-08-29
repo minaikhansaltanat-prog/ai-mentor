@@ -6,6 +6,7 @@ import Link from "next/link";
 import { t, type Lang } from "@/lib/i18n";
 import LangToggle from "@/components/LangToggle";
 import PasswordInput from "@/components/PasswordInput";
+import { GRADES, gradeLabel } from "@/lib/grades";
 
 type Role = "STUDENT" | "PARENT" | "TEACHER" | "SCHOOL_ADMIN";
 
@@ -145,9 +146,9 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
                 value={grade}
                 onChange={(e) => setGrade(e.target.value)}
               >
-                {[5, 6, 7, 8, 9, 10, 11].map((g) => (
+                {GRADES.map((g) => (
                   <option key={g} value={g}>
-                    {g}
+                    {gradeLabel(g, lang)}
                   </option>
                 ))}
               </select>

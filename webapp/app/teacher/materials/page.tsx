@@ -24,7 +24,7 @@ export default async function MaterialsPage() {
   }
 
   const [subjects, classes, materials] = await Promise.all([
-    db.subject.findMany(),
+    db.subject.findMany({ orderBy: { order: "asc" } }),
     db.classRoom.findMany({ where: { teacherId: session.userId } }),
     db.material.findMany({
       where: { schoolId: teacher.schoolId ?? undefined },

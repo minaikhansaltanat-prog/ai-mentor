@@ -4,13 +4,6 @@ import { db } from "@/lib/db";
 import { askAiTeacher, type ChatTurn } from "@/lib/ai";
 import { getLang } from "@/lib/lang-server";
 
-const SUBJECT_LABELS: Record<string, { kk: string; ru: string }> = {
-  math: { kk: "Математика", ru: "Математика" },
-  english: { kk: "Ағылшын тілі", ru: "Английский язык" },
-  physics: { kk: "Физика", ru: "Физика" },
-  cs: { kk: "Информатика", ru: "Информатика" },
-};
-
 export async function GET(req: NextRequest) {
   const session = await getSession();
   if (!session || session.role !== "STUDENT") return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -55,7 +48,8 @@ export async function POST(req: NextRequest) {
     content: m.content,
   }));
 
-  const subjectLabel = SUBJECT_LABELS[subjectCode]?.[lang] ?? subjectCode;
+  const subjectRow = await db.subject.findUnique({ where: { code: subjectCode } });
+  const subjectLabel = subjectRow ? (lang === "ru" ? subjectRow.nameRu : subjectRow.nameKk) : subjectCode;
 
   const { reply, mocked } = await askAiTeacher({ lang, subjectLabel, history, message });
 

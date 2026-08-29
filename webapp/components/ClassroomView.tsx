@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { t, type Lang } from "@/lib/i18n";
+import { GRADES, gradeLabel } from "@/lib/grades";
 
 type Student = { id: string; name: string; avg: number };
 type TopicStat = { titleKk: string; titleRu: string; avg: number };
@@ -104,9 +105,9 @@ export default function ClassroomView({
             required
           />
           <select className="w-full h-12 rounded-xl border border-ink-200 px-4" value={grade} onChange={(e) => setGrade(e.target.value)}>
-            {[5, 6, 7, 8, 9, 10, 11].map((g) => (
+            {GRADES.map((g) => (
               <option key={g} value={g}>
-                {g}
+                {gradeLabel(g, lang)}
               </option>
             ))}
           </select>
