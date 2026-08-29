@@ -8,6 +8,7 @@ export default async function ClassroomPage() {
   const lang = await getLang();
 
   const teacher = await db.user.findUniqueOrThrow({ where: { id: session.userId } });
+  const school = teacher.schoolId ? await db.school.findUnique({ where: { id: teacher.schoolId } }) : null;
 
   const classRoom = await db.classRoom.findFirst({
     where: { teacherId: session.userId },
@@ -17,7 +18,17 @@ export default async function ClassroomPage() {
   });
 
   if (!classRoom) {
-    return <ClassroomView lang={lang} verified={teacher.teacherVerified} classRoom={null} students={[]} topicStats={[]} topics={[]} />;
+    return (
+      <ClassroomView
+        lang={lang}
+        verified={teacher.teacherVerified}
+        school={school ? { name: school.name, joinCode: school.joinCode } : null}
+        classRoom={null}
+        students={[]}
+        topicStats={[]}
+        topics={[]}
+      />
+    );
   }
 
   const studentIds = classRoom.students.map((s) => s.id);
@@ -50,6 +61,7 @@ export default async function ClassroomPage() {
     <ClassroomView
       lang={lang}
       verified={teacher.teacherVerified}
+      school={school ? { name: school.name, joinCode: school.joinCode } : null}
       classRoom={{ id: classRoom.id, name: classRoom.name, joinCode: classRoom.joinCode }}
       students={students}
       topicStats={topicStats}
