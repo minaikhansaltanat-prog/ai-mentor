@@ -139,9 +139,11 @@ model Material {
   classRoomId String?
   subjectCode String?
   title       String
+  kind        String      @default("FILE")
   fileKey     String?
   fileType    String?
   videoUrl    String?
+  textContent String?
   visibility  Visibility  @default(SCHOOL)
   createdAt   DateTime    @default(now())
 }

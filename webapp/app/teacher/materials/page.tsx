@@ -45,8 +45,9 @@ export default async function MaterialsPage() {
         classRoomName: m.classRoom?.name ?? null,
         teacherName: m.teacher.name,
         isMine: m.teacherId === session.userId,
-        hasFile: Boolean(m.fileKey),
+        kind: m.kind as "FILE" | "PHOTO" | "VIDEO" | "TEXT",
         videoUrl: m.videoUrl,
+        textContent: m.textContent,
         createdAt: m.createdAt.toISOString(),
       }))}
     />
