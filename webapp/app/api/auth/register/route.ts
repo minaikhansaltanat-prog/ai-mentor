@@ -6,6 +6,7 @@ import { createSession } from "@/lib/auth";
 import { generateJoinCode } from "@/lib/codes";
 import { roleHomePath } from "@/lib/roleHome";
 import { requestChildLink } from "@/lib/parentLink";
+import { PACKAGE_PRICES, PACKAGE_TYPES, usedLicenseCount } from "@/lib/company";
 
 const schema = z.object({
   role: z.enum(["STUDENT", "PARENT", "TEACHER", "SCHOOL_ADMIN", "COMPANY_ADMIN"]),
@@ -19,6 +20,8 @@ const schema = z.object({
   schoolCode: z.string().optional(),
   companyName: z.string().optional(),
   companyCode: z.string().optional(),
+  companyBin: z.string().optional(),
+  companyPackage: z.enum(PACKAGE_TYPES).optional(),
   licenseCount: z.number().int().min(1).max(10000).optional(),
 });
 
@@ -66,18 +69,24 @@ export async function POST(req: NextRequest) {
   } else if (data.role === "COMPANY_ADMIN") {
     if (!data.companyName) return NextResponse.json({ error: "invalid_input" }, { status: 400 });
     const joinCode = generateJoinCode();
+    const packageType = data.companyPackage ?? "STARTER";
     const company = await db.company.create({
-      data: { name: data.companyName, joinCode, licenseCount: data.licenseCount ?? 50 },
+      data: {
+        name: data.companyName,
+        joinCode,
+        licenseCount: data.licenseCount ?? 50,
+        bin: data.companyBin,
+        packageType,
+        pricePerLicense: PACKAGE_PRICES[packageType] ?? 18000,
+      },
     });
     companyId = company.id;
     createdCompanyCode = joinCode;
   } else if (data.role === "PARENT" && data.companyCode) {
-    const company = await db.company.findUnique({
-      where: { joinCode: data.companyCode.toUpperCase() },
-      include: { _count: { select: { employees: { where: { role: "PARENT" } } } } },
-    });
+    const company = await db.company.findUnique({ where: { joinCode: data.companyCode.toUpperCase() } });
     if (!company) return NextResponse.json({ error: "code_invalid" }, { status: 400 });
-    if (company._count.employees >= company.licenseCount) {
+    const used = await usedLicenseCount(company.id);
+    if (used >= company.licenseCount) {
       return NextResponse.json({ error: "company_full" }, { status: 409 });
     }
     companyId = company.id;
@@ -98,6 +107,12 @@ export async function POST(req: NextRequest) {
 
   if (data.role === "PARENT" && data.childPhone) {
     await requestChildLink(user.id, user.name, data.childPhone).catch(() => {});
+  }
+
+  if (data.role === "PARENT" && companyId) {
+    await db.employeeInvite
+      .updateMany({ where: { companyId, phone: data.phone, status: "PENDING" }, data: { status: "REGISTERED" } })
+      .catch(() => {});
   }
 
   await createSession({ userId: user.id, role: user.role, name: user.name });

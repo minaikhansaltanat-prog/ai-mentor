@@ -2,6 +2,14 @@ import { requireRole } from "@/lib/requireRole";
 import { getLang } from "@/lib/lang-server";
 import { t } from "@/lib/i18n";
 import { db } from "@/lib/db";
+import CompanyEmployees from "@/components/CompanyEmployees";
+
+const STATUS_LABEL_KEY: Record<string, "statusActive" | "statusTrial" | "statusSuspended" | "statusChurned"> = {
+  ACTIVE: "statusActive",
+  TRIAL: "statusTrial",
+  SUSPENDED: "statusSuspended",
+  CHURNED: "statusChurned",
+};
 
 export default async function CompanyAdminPage() {
   const session = await requireRole("COMPANY_ADMIN");
@@ -17,15 +25,21 @@ export default async function CompanyAdminPage() {
     );
   }
 
-  const company = await db.company.findUniqueOrThrow({
-    where: { id: admin.companyId },
-    include: {
-      employees: {
-        where: { role: "PARENT" },
-        include: { parentLinks: { where: { status: "APPROVED" }, include: { child: true } } },
+  const [company, invites] = await Promise.all([
+    db.company.findUniqueOrThrow({
+      where: { id: admin.companyId },
+      include: {
+        employees: {
+          where: { role: "PARENT" },
+          include: { parentLinks: { where: { status: "APPROVED" }, include: { child: true } } },
+        },
       },
-    },
-  });
+    }),
+    db.employeeInvite.findMany({
+      where: { companyId: admin.companyId, status: "PENDING" },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
 
   const studentIds = company.employees.flatMap((e) => e.parentLinks.map((l) => l.childId));
   const progress = await db.progress.findMany({ where: { studentId: { in: studentIds } } });
@@ -42,18 +56,36 @@ export default async function CompanyAdminPage() {
     const childIds = e.parentLinks.map((l) => l.childId);
     const values = childIds.flatMap((id) => progressByStudent.get(id) ?? []);
     const avg = values.length === 0 ? null : Math.round(values.reduce((s, v) => s + v, 0) / values.length);
-    return { id: e.id, name: e.name, phone: e.phone, childCount: childIds.length, avg };
+    return { id: e.id, name: e.name, phone: e.phone, childCount: childIds.length, isActive: childIds.length > 0, avg };
   });
 
-  const usedLicenses = company.employees.length;
+  const usedLicenses = employeeRows.filter((e) => e.isActive).length;
+  const totalEmployees = employeeRows.length;
+  const statusKey = STATUS_LABEL_KEY[company.status] ?? "statusActive";
+  const packageLabel = tt.company.packages[company.packageType as keyof typeof tt.company.packages] ?? company.packageType;
+
+  const now = new Date();
+  const periodLabel = now.toLocaleDateString(lang === "kk" ? "kk-KZ" : "ru-RU", { month: "long", year: "numeric" });
+  const billingAmount = company.pricePerLicense > 0 ? usedLicenses * company.pricePerLicense : null;
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 md:py-10">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="font-display font-bold text-2xl text-ink-900">{company.name}</h1>
-        <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-gold-100 text-gold-700">
-          {tt.company.companyCode}: {company.joinCode}
-        </span>
+      <div className="card p-5 sm:p-6">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h1 className="font-display font-bold text-2xl text-ink-900">{company.name}</h1>
+            {company.bin && <p className="text-xs text-ink-400 mt-1">{tt.company.bin}: {company.bin}</p>}
+          </div>
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-leaf-100 text-leaf-700">
+              {tt.company[statusKey]}
+            </span>
+            <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-ink-100 text-ink-700">{packageLabel}</span>
+            <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-gold-100 text-gold-700">
+              {tt.company.companyCode}: {company.joinCode}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
@@ -64,7 +96,7 @@ export default async function CompanyAdminPage() {
           <p className="text-[11px] text-ink-500">{tt.company.licenseUsage}</p>
         </div>
         <div className="card p-4 text-center">
-          <p className="font-display font-bold text-2xl text-ink-900">{usedLicenses}</p>
+          <p className="font-display font-bold text-2xl text-ink-900">{totalEmployees}</p>
           <p className="text-[11px] text-ink-500">{tt.company.totalEmployees}</p>
         </div>
         <div className="card p-4 text-center">
@@ -77,23 +109,24 @@ export default async function CompanyAdminPage() {
         </div>
       </div>
 
-      <p className="text-xs font-bold text-ink-400 mt-8 mb-3 uppercase tracking-wide">{tt.company.employees}</p>
-      {employeeRows.length === 0 ? (
-        <p className="text-ink-400 text-sm">—</p>
-      ) : (
-        <div className="space-y-2">
-          {employeeRows.map((e) => (
-            <div key={e.id} className="card p-4 flex items-center gap-3 flex-wrap">
-              <span className="font-semibold text-ink-800">{e.name}</span>
-              <span className="text-xs text-ink-400">{e.phone}</span>
-              <span className="text-xs text-ink-400">
-                {e.childCount} {tt.company.childrenShort}
-              </span>
-              {e.avg !== null && <span className="ml-auto text-xs font-bold text-leaf-600">{e.avg}%</span>}
-            </div>
-          ))}
+      <p className="text-xs font-bold text-ink-400 mt-8 mb-3 uppercase tracking-wide">{tt.company.billing}</p>
+      <div className="card p-5 flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <p className="text-sm text-ink-500">{periodLabel}</p>
+          <p className="font-display font-bold text-xl text-ink-900 mt-1">
+            {billingAmount !== null ? `${billingAmount.toLocaleString(lang === "kk" ? "kk-KZ" : "ru-RU")} ₸` : tt.company.byContract}
+          </p>
         </div>
-      )}
+        <p className="text-xs text-ink-400 max-w-xs text-right">
+          {billingAmount !== null
+            ? `${usedLicenses} × ${company.pricePerLicense.toLocaleString(lang === "kk" ? "kk-KZ" : "ru-RU")} ₸`
+            : tt.company.billingNote}
+        </p>
+      </div>
+
+      <div className="mt-8">
+        <CompanyEmployees lang={lang} invites={invites} employees={employeeRows} />
+      </div>
     </div>
   );
 }

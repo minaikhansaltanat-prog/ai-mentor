@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notify } from "@/lib/notify";
+import { usedLicenseCount } from "@/lib/company";
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ linkId: string }> }) {
   const session = await getSession();
@@ -13,6 +14,24 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ linkId: st
 
   const link = await db.parentLink.findUnique({ where: { id: linkId }, include: { parent: true, child: true } });
   if (!link || link.childId !== session.userId) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
+  if (approve && link.parent.companyId) {
+    const company = await db.company.findUnique({ where: { id: link.parent.companyId } });
+    if (company) {
+      const used = await usedLicenseCount(company.id, link.parentId);
+      if (used >= company.licenseCount) {
+        await notify({
+          userId: link.parentId,
+          type: "company_license_full",
+          titleKk: "Компания лицензиясы жетпеді",
+          titleRu: "Не хватило лицензии компании",
+          bodyKk: `${link.child.name} байланысын растады, бірақ компанияның лицензия лимиті толған. HR-мен байланысыңыз.`,
+          bodyRu: `${link.child.name} подтвердил(а) связь, но лимит лицензий компании исчерпан. Свяжитесь с HR.`,
+        });
+        return NextResponse.json({ error: "company_license_full" }, { status: 409 });
+      }
+    }
+  }
 
   if (approve) {
     await db.parentLink.update({ where: { id: linkId }, data: { status: "APPROVED" } });

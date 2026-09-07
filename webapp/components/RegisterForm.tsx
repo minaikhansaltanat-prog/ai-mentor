@@ -25,6 +25,8 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
   const [schoolCode, setSchoolCode] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [companyCode, setCompanyCode] = useState("");
+  const [companyBin, setCompanyBin] = useState("");
+  const [companyPackage, setCompanyPackage] = useState<"STARTER" | "BUSINESS" | "ENTERPRISE">("STARTER");
   const [licenseCount, setLicenseCount] = useState("50");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -50,6 +52,8 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
     if (role === "COMPANY_ADMIN") {
       payload.companyName = companyName;
       payload.licenseCount = Number(licenseCount);
+      if (companyBin) payload.companyBin = companyBin;
+      payload.companyPackage = companyPackage;
     }
 
     const res = await fetch("/api/auth/register", {
@@ -224,6 +228,22 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
                 onChange={(e) => setCompanyName(e.target.value)}
                 required
               />
+              <label className="block text-sm font-semibold text-ink-700 mb-1.5">{tt.auth.companyBin}</label>
+              <input
+                className="w-full h-12 rounded-xl border border-ink-200 px-4 mb-4 focus:border-gold-500 outline-none"
+                value={companyBin}
+                onChange={(e) => setCompanyBin(e.target.value)}
+              />
+              <label className="block text-sm font-semibold text-ink-700 mb-1.5">{tt.auth.companyPackage}</label>
+              <select
+                className="w-full h-12 rounded-xl border border-ink-200 px-4 mb-4 focus:border-gold-500 outline-none"
+                value={companyPackage}
+                onChange={(e) => setCompanyPackage(e.target.value as typeof companyPackage)}
+              >
+                <option value="STARTER">{tt.company.packages.STARTER}</option>
+                <option value="BUSINESS">{tt.company.packages.BUSINESS}</option>
+                <option value="ENTERPRISE">{tt.company.packages.ENTERPRISE}</option>
+              </select>
               <label className="block text-sm font-semibold text-ink-700 mb-1.5">{tt.auth.licenseCount}</label>
               <input
                 type="number"

@@ -45,14 +45,31 @@ model School {
 }
 
 model Company {
-  id           String   @id @default(cuid())
-  name         String
-  industry     String?
-  joinCode     String   @unique
-  licenseCount Int      @default(50)
-  billingEmail String?
-  createdAt    DateTime @default(now())
-  employees    User[]
+  id              String   @id @default(cuid())
+  name            String
+  bin             String?
+  industry        String?
+  status          String   @default("ACTIVE")
+  packageType     String   @default("STARTER")
+  pricePerLicense Int      @default(18000)
+  joinCode        String   @unique
+  licenseCount    Int      @default(50)
+  billingEmail    String?
+  createdAt       DateTime @default(now())
+  employees       User[]
+  invites         EmployeeInvite[]
+}
+
+model EmployeeInvite {
+  id        String   @id @default(cuid())
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
+  phone     String
+  name      String?
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+
+  @@unique([companyId, phone])
 }
 
 model ClassRoom {

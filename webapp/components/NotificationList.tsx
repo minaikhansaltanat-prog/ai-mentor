@@ -20,7 +20,7 @@ type Item = {
 export default function NotificationList({ lang, items }: { lang: Lang; items: Item[] }) {
   const tt = t(lang);
   const [list, setList] = useState(items);
-  const [responded, setResponded] = useState<Record<string, "approved" | "rejected">>({});
+  const [responded, setResponded] = useState<Record<string, "approved" | "rejected" | "failed">>({});
 
   async function markAllRead() {
     setList((l) => l.map((n) => ({ ...n, read: true })));
@@ -29,12 +29,12 @@ export default function NotificationList({ lang, items }: { lang: Lang; items: I
 
   async function respond(item: Item, approve: boolean) {
     if (!item.refId) return;
-    await fetch(`/api/parent-link/${item.refId}/respond`, {
+    const res = await fetch(`/api/parent-link/${item.refId}/respond`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ approve }),
     });
-    setResponded((r) => ({ ...r, [item.id]: approve ? "approved" : "rejected" }));
+    setResponded((r) => ({ ...r, [item.id]: !res.ok ? "failed" : approve ? "approved" : "rejected" }));
     setList((l) => l.map((n) => (n.id === item.id ? { ...n, read: true } : n)));
   }
 
@@ -81,6 +81,7 @@ export default function NotificationList({ lang, items }: { lang: Lang; items: I
                 )}
                 {responded[n.id] === "approved" && <p className="text-sm text-leaf-600 mt-2">{tt.notif.linkApproved}</p>}
                 {responded[n.id] === "rejected" && <p className="text-sm text-ink-400 mt-2">{tt.notif.linkRejected}</p>}
+                {responded[n.id] === "failed" && <p className="text-sm text-red-500 mt-2">{tt.notif.linkFailed}</p>}
               </div>
             );
 
