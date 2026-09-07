@@ -7,6 +7,7 @@ import { t, type Lang } from "@/lib/i18n";
 import LangToggle from "@/components/LangToggle";
 import PasswordInput from "@/components/PasswordInput";
 import { GRADES, gradeLabel } from "@/lib/grades";
+import { tierForLicenseCount } from "@/lib/companyTiers";
 
 type Role = "STUDENT" | "PARENT" | "TEACHER" | "SCHOOL_ADMIN" | "COMPANY_ADMIN";
 
@@ -26,7 +27,6 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
   const [companyName, setCompanyName] = useState("");
   const [companyCode, setCompanyCode] = useState("");
   const [companyBin, setCompanyBin] = useState("");
-  const [companyPackage, setCompanyPackage] = useState<"STARTER" | "BUSINESS" | "ENTERPRISE">("STARTER");
   const [licenseCount, setLicenseCount] = useState("50");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -53,7 +53,6 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
       payload.companyName = companyName;
       payload.licenseCount = Number(licenseCount);
       if (companyBin) payload.companyBin = companyBin;
-      payload.companyPackage = companyPackage;
     }
 
     const res = await fetch("/api/auth/register", {
@@ -234,26 +233,22 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
                 value={companyBin}
                 onChange={(e) => setCompanyBin(e.target.value)}
               />
-              <label className="block text-sm font-semibold text-ink-700 mb-1.5">{tt.auth.companyPackage}</label>
-              <select
-                className="w-full h-12 rounded-xl border border-ink-200 px-4 mb-4 focus:border-gold-500 outline-none"
-                value={companyPackage}
-                onChange={(e) => setCompanyPackage(e.target.value as typeof companyPackage)}
-              >
-                <option value="STARTER">{tt.company.packages.STARTER}</option>
-                <option value="BUSINESS">{tt.company.packages.BUSINESS}</option>
-                <option value="ENTERPRISE">{tt.company.packages.ENTERPRISE}</option>
-              </select>
               <label className="block text-sm font-semibold text-ink-700 mb-1.5">{tt.auth.licenseCount}</label>
               <input
                 type="number"
                 min={1}
                 max={10000}
-                className="w-full h-12 rounded-xl border border-ink-200 px-4 mb-4 focus:border-gold-500 outline-none"
+                className="w-full h-12 rounded-xl border border-ink-200 px-4 focus:border-gold-500 outline-none"
                 value={licenseCount}
                 onChange={(e) => setLicenseCount(e.target.value)}
                 required
               />
+              <p className="text-xs text-ink-400 mt-1.5 mb-4">
+                {tt.auth.autoPackageHint}:{" "}
+                <span className="font-semibold text-gold-600">
+                  {tt.company.packages[tierForLicenseCount(Number(licenseCount) || 0).packageType]}
+                </span>
+              </p>
             </>
           )}
 

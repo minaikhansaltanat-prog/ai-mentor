@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { usedLicenseCount } from "@/lib/company";
+import { tierForLicenseCount, usedLicenseCount } from "@/lib/company";
 
 export async function PATCH(req: NextRequest) {
   const session = await getSession();
@@ -22,15 +22,23 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "below_used", used }, { status: 409 });
   }
 
-  await db.company.update({ where: { id: company.id }, data: { licenseCount } });
+  const tier = tierForLicenseCount(licenseCount);
+  await db.company.update({
+    where: { id: company.id },
+    data: { licenseCount, packageType: tier.packageType, pricePerLicense: tier.pricePerLicense },
+  });
+
+  const tierChanged = tier.packageType !== company.packageType;
   await db.companyAuditLog.create({
     data: {
       companyId: company.id,
       actorName: admin.name,
       action: "license_count_changed",
-      meta: `${company.licenseCount} -> ${licenseCount}`,
+      meta: tierChanged
+        ? `${company.licenseCount} -> ${licenseCount} (${company.packageType} -> ${tier.packageType})`
+        : `${company.licenseCount} -> ${licenseCount}`,
     },
   });
 
-  return NextResponse.json({ ok: true, licenseCount });
+  return NextResponse.json({ ok: true, licenseCount, packageType: tier.packageType });
 }

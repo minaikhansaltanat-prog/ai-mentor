@@ -6,7 +6,7 @@ import { createSession } from "@/lib/auth";
 import { generateJoinCode } from "@/lib/codes";
 import { roleHomePath } from "@/lib/roleHome";
 import { requestChildLink } from "@/lib/parentLink";
-import { PACKAGE_PRICES, PACKAGE_TYPES, usedLicenseCount } from "@/lib/company";
+import { tierForLicenseCount, usedLicenseCount } from "@/lib/company";
 
 const schema = z.object({
   role: z.enum(["STUDENT", "PARENT", "TEACHER", "SCHOOL_ADMIN", "COMPANY_ADMIN"]),
@@ -21,7 +21,6 @@ const schema = z.object({
   companyName: z.string().optional(),
   companyCode: z.string().optional(),
   companyBin: z.string().optional(),
-  companyPackage: z.enum(PACKAGE_TYPES).optional(),
   licenseCount: z.number().int().min(1).max(10000).optional(),
 });
 
@@ -69,15 +68,16 @@ export async function POST(req: NextRequest) {
   } else if (data.role === "COMPANY_ADMIN") {
     if (!data.companyName) return NextResponse.json({ error: "invalid_input" }, { status: 400 });
     const joinCode = generateJoinCode();
-    const packageType = data.companyPackage ?? "STARTER";
+    const licenseCount = data.licenseCount ?? 50;
+    const tier = tierForLicenseCount(licenseCount);
     const company = await db.company.create({
       data: {
         name: data.companyName,
         joinCode,
-        licenseCount: data.licenseCount ?? 50,
+        licenseCount,
         bin: data.companyBin,
-        packageType,
-        pricePerLicense: PACKAGE_PRICES[packageType] ?? 18000,
+        packageType: tier.packageType,
+        pricePerLicense: tier.pricePerLicense,
       },
     });
     companyId = company.id;
