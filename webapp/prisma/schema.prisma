@@ -13,6 +13,7 @@ enum Role {
   TEACHER
   SCHOOL_ADMIN
   COMPANY_ADMIN
+  INTERNAL_ADMIN
 }
 
 enum HomeworkState {
