@@ -8,7 +8,7 @@ import LangToggle from "@/components/LangToggle";
 export type NavItem = {
   href: string;
   label: string;
-  icon: "home" | "chat" | "book" | "trend" | "user" | "users" | "school";
+  icon: "home" | "chat" | "book" | "trend" | "user" | "users" | "school" | "briefcase";
 };
 
 const ICONS: Record<NavItem["icon"], React.ReactNode> = {
@@ -25,6 +25,9 @@ const ICONS: Record<NavItem["icon"], React.ReactNode> = {
     <path d="M9 12a3 3 0 100-6 3 3 0 000 6zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15.5 6.5a3 3 0 010 5.8M20.5 20c0-2.8-2-5.2-4.7-5.8" />
   ),
   school: <path d="M12 3l9 5-9 5-9-5 9-5zM5 10.5V16c0 1.5 3 3 7 3s7-1.5 7-3v-5.5" />,
+  briefcase: (
+    <path d="M4 8.5A1.5 1.5 0 015.5 7h13A1.5 1.5 0 0120 8.5v9a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 17.5v-9zM9 7V5.5A1.5 1.5 0 0110.5 4h3A1.5 1.5 0 0115 5.5V7M4 12h16" />
+  ),
 };
 
 function Icon({ name, className }: { name: NavItem["icon"]; className?: string }) {

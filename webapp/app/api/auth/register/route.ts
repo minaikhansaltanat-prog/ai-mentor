@@ -8,7 +8,7 @@ import { roleHomePath } from "@/lib/roleHome";
 import { requestChildLink } from "@/lib/parentLink";
 
 const schema = z.object({
-  role: z.enum(["STUDENT", "PARENT", "TEACHER", "SCHOOL_ADMIN"]),
+  role: z.enum(["STUDENT", "PARENT", "TEACHER", "SCHOOL_ADMIN", "COMPANY_ADMIN"]),
   name: z.string().min(2),
   phone: z.string().min(6),
   password: z.string().min(4),
@@ -17,6 +17,9 @@ const schema = z.object({
   childPhone: z.string().optional(),
   schoolName: z.string().optional(),
   schoolCode: z.string().optional(),
+  companyName: z.string().optional(),
+  companyCode: z.string().optional(),
+  licenseCount: z.number().int().min(1).max(10000).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -36,8 +39,10 @@ export async function POST(req: NextRequest) {
 
   let schoolId: string | undefined;
   let classRoomId: string | undefined;
+  let companyId: string | undefined;
   let grade = data.grade;
   let createdSchoolCode: string | undefined;
+  let createdCompanyCode: string | undefined;
 
   if (data.role === "STUDENT") {
     if (data.classCode) {
@@ -58,6 +63,24 @@ export async function POST(req: NextRequest) {
     const school = await db.school.create({ data: { name: data.schoolName, joinCode } });
     schoolId = school.id;
     createdSchoolCode = joinCode;
+  } else if (data.role === "COMPANY_ADMIN") {
+    if (!data.companyName) return NextResponse.json({ error: "invalid_input" }, { status: 400 });
+    const joinCode = generateJoinCode();
+    const company = await db.company.create({
+      data: { name: data.companyName, joinCode, licenseCount: data.licenseCount ?? 50 },
+    });
+    companyId = company.id;
+    createdCompanyCode = joinCode;
+  } else if (data.role === "PARENT" && data.companyCode) {
+    const company = await db.company.findUnique({
+      where: { joinCode: data.companyCode.toUpperCase() },
+      include: { _count: { select: { employees: { where: { role: "PARENT" } } } } },
+    });
+    if (!company) return NextResponse.json({ error: "code_invalid" }, { status: 400 });
+    if (company._count.employees >= company.licenseCount) {
+      return NextResponse.json({ error: "company_full" }, { status: 409 });
+    }
+    companyId = company.id;
   }
 
   const user = await db.user.create({
@@ -69,6 +92,7 @@ export async function POST(req: NextRequest) {
       grade: data.role === "STUDENT" ? grade : undefined,
       schoolId,
       classRoomId,
+      companyId,
     },
   });
 
@@ -82,5 +106,6 @@ export async function POST(req: NextRequest) {
     ok: true,
     redirect: roleHomePath(user.role),
     schoolCode: createdSchoolCode,
+    companyCode: createdCompanyCode,
   });
 }

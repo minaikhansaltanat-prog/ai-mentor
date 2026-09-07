@@ -10,6 +10,8 @@ export function roleHomePath(role: Role) {
       return "/teacher/classroom";
     case "SCHOOL_ADMIN":
       return "/school/admin";
+    case "COMPANY_ADMIN":
+      return "/company/admin";
     default:
       return "/login";
   }

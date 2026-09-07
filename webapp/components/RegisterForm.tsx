@@ -8,7 +8,7 @@ import LangToggle from "@/components/LangToggle";
 import PasswordInput from "@/components/PasswordInput";
 import { GRADES, gradeLabel } from "@/lib/grades";
 
-type Role = "STUDENT" | "PARENT" | "TEACHER" | "SCHOOL_ADMIN";
+type Role = "STUDENT" | "PARENT" | "TEACHER" | "SCHOOL_ADMIN" | "COMPANY_ADMIN";
 
 export default function RegisterForm({ lang }: { lang: Lang }) {
   const tt = t(lang);
@@ -23,9 +23,13 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
   const [childPhone, setChildPhone] = useState("");
   const [schoolName, setSchoolName] = useState("");
   const [schoolCode, setSchoolCode] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [companyCode, setCompanyCode] = useState("");
+  const [licenseCount, setLicenseCount] = useState("50");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [createdCode, setCreatedCode] = useState<string | null>(null);
+  const [createdCodeLabel, setCreatedCodeLabel] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,9 +41,16 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
       payload.grade = Number(grade);
       if (classCode) payload.classCode = classCode;
     }
-    if (role === "PARENT" && childPhone) payload.childPhone = childPhone;
+    if (role === "PARENT") {
+      if (childPhone) payload.childPhone = childPhone;
+      if (companyCode) payload.companyCode = companyCode;
+    }
     if (role === "TEACHER") payload.schoolCode = schoolCode;
     if (role === "SCHOOL_ADMIN") payload.schoolName = schoolName;
+    if (role === "COMPANY_ADMIN") {
+      payload.companyName = companyName;
+      payload.licenseCount = Number(licenseCount);
+    }
 
     const res = await fetch("/api/auth/register", {
       method: "POST",
@@ -52,13 +63,15 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
       const data = await res.json().catch(() => ({}));
       if (data.error === "phone_taken") setError(tt.auth.error.phoneTaken);
       else if (data.error === "code_invalid") setError(tt.auth.error.codeInvalid);
+      else if (data.error === "company_full") setError(tt.auth.error.companyFull);
       else setError(tt.auth.error.required);
       return;
     }
 
     const data = await res.json();
-    if (data.schoolCode) {
-      setCreatedCode(data.schoolCode);
+    if (data.schoolCode || data.companyCode) {
+      setCreatedCode(data.schoolCode || data.companyCode);
+      setCreatedCodeLabel(data.schoolCode ? tt.auth.schoolCreated : tt.auth.companyCreated);
       setTimeout(() => router.push(data.redirect), 2200);
     } else {
       router.push(data.redirect);
@@ -66,7 +79,7 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
     }
   }
 
-  const roleOptions: Role[] = ["STUDENT", "PARENT", "TEACHER", "SCHOOL_ADMIN"];
+  const roleOptions: Role[] = ["STUDENT", "PARENT", "TEACHER", "SCHOOL_ADMIN", "COMPANY_ADMIN"];
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-10 relative overflow-hidden">
@@ -86,7 +99,7 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
 
       {createdCode ? (
         <div className="card w-full max-w-sm p-8 text-center">
-          <p className="text-ink-600 mb-2">{tt.auth.schoolCreated}:</p>
+          <p className="text-ink-600 mb-2">{createdCodeLabel}:</p>
           <p className="font-display font-bold text-3xl text-gold-600 tracking-widest">{createdCode}</p>
         </div>
       ) : (
@@ -169,6 +182,12 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
                 value={childPhone}
                 onChange={(e) => setChildPhone(e.target.value)}
               />
+              <label className="block text-sm font-semibold text-ink-700 mb-1.5">{tt.auth.companyCode}</label>
+              <input
+                className="w-full h-12 rounded-xl border border-ink-200 px-4 mb-4 focus:border-gold-500 outline-none uppercase"
+                value={companyCode}
+                onChange={(e) => setCompanyCode(e.target.value)}
+              />
             </>
           )}
 
@@ -191,6 +210,28 @@ export default function RegisterForm({ lang }: { lang: Lang }) {
                 className="w-full h-12 rounded-xl border border-ink-200 px-4 mb-4 focus:border-gold-500 outline-none"
                 value={schoolName}
                 onChange={(e) => setSchoolName(e.target.value)}
+                required
+              />
+            </>
+          )}
+
+          {role === "COMPANY_ADMIN" && (
+            <>
+              <label className="block text-sm font-semibold text-ink-700 mb-1.5">{tt.auth.companyName}</label>
+              <input
+                className="w-full h-12 rounded-xl border border-ink-200 px-4 mb-4 focus:border-gold-500 outline-none"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                required
+              />
+              <label className="block text-sm font-semibold text-ink-700 mb-1.5">{tt.auth.licenseCount}</label>
+              <input
+                type="number"
+                min={1}
+                max={10000}
+                className="w-full h-12 rounded-xl border border-ink-200 px-4 mb-4 focus:border-gold-500 outline-none"
+                value={licenseCount}
+                onChange={(e) => setLicenseCount(e.target.value)}
                 required
               />
             </>

@@ -12,6 +12,7 @@ enum Role {
   PARENT
   TEACHER
   SCHOOL_ADMIN
+  COMPANY_ADMIN
 }
 
 enum HomeworkState {
@@ -41,6 +42,17 @@ model School {
   users     User[]
   classes   ClassRoom[]
   materials Material[]
+}
+
+model Company {
+  id           String   @id @default(cuid())
+  name         String
+  industry     String?
+  joinCode     String   @unique
+  licenseCount Int      @default(50)
+  billingEmail String?
+  createdAt    DateTime @default(now())
+  employees    User[]
 }
 
 model ClassRoom {
@@ -88,6 +100,9 @@ model User {
 
   school    School?  @relation(fields: [schoolId], references: [id])
   schoolId  String?
+
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?
 
   classRoom   ClassRoom? @relation("StudentClass", fields: [classRoomId], references: [id])
   classRoomId String?

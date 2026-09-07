@@ -21,6 +21,8 @@ export function navItemsForRole(role: Role, tt: Dict): NavItem[] {
       ];
     case "SCHOOL_ADMIN":
       return [{ href: "/school/admin", label: tt.nav.admin, icon: "school" }];
+    case "COMPANY_ADMIN":
+      return [{ href: "/company/admin", label: tt.nav.companyAdmin, icon: "briefcase" }];
     default:
       return [];
   }
