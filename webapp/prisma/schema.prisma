@@ -58,6 +58,17 @@ model Company {
   createdAt       DateTime @default(now())
   employees       User[]
   invites         EmployeeInvite[]
+  auditLogs       CompanyAuditLog[]
+}
+
+model CompanyAuditLog {
+  id          String   @id @default(cuid())
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId   String
+  actorName   String
+  action      String
+  targetPhone String?
+  createdAt   DateTime @default(now())
 }
 
 model EmployeeInvite {

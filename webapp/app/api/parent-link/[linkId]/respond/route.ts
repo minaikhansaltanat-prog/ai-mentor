@@ -15,11 +15,14 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ linkId: st
   const link = await db.parentLink.findUnique({ where: { id: linkId }, include: { parent: true, child: true } });
   if (!link || link.childId !== session.userId) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
+  let company: { id: string; licenseCount: number } | null = null;
+  let usedBefore = 0;
+
   if (approve && link.parent.companyId) {
-    const company = await db.company.findUnique({ where: { id: link.parent.companyId } });
+    company = await db.company.findUnique({ where: { id: link.parent.companyId } });
     if (company) {
-      const used = await usedLicenseCount(company.id, link.parentId);
-      if (used >= company.licenseCount) {
+      usedBefore = await usedLicenseCount(company.id, link.parentId);
+      if (usedBefore >= company.licenseCount) {
         await notify({
           userId: link.parentId,
           type: "company_license_full",
@@ -44,6 +47,26 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ linkId: st
       bodyRu: `${link.child.name} подтвердил(а) запрос.`,
       linkUrl: "/parent/dashboard",
     });
+
+    if (company) {
+      const usedAfter = usedBefore + 1;
+      const before = usedBefore / company.licenseCount;
+      const after = usedAfter / company.licenseCount;
+      if (before < 0.9 && after >= 0.9) {
+        const companyAdmin = await db.user.findFirst({ where: { companyId: company.id, role: "COMPANY_ADMIN" } });
+        if (companyAdmin) {
+          await notify({
+            userId: companyAdmin.id,
+            type: "company_license_low",
+            titleKk: "Лицензия лимитіне жақындап қалды",
+            titleRu: "Приближается лимит лицензий",
+            bodyKk: `${usedAfter}/${company.licenseCount} лицензия пайдаланылды. Лимитті ұлғайту үшін бізбен байланысыңыз.`,
+            bodyRu: `Использовано ${usedAfter}/${company.licenseCount} лицензий. Свяжитесь с нами, чтобы увеличить лимит.`,
+            linkUrl: "/company/admin",
+          });
+        }
+      }
+    }
   } else {
     await db.parentLink.delete({ where: { id: linkId } });
     await notify({

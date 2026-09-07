@@ -25,7 +25,7 @@ export default async function CompanyAdminPage() {
     );
   }
 
-  const [company, invites] = await Promise.all([
+  const [company, invites, auditLog] = await Promise.all([
     db.company.findUniqueOrThrow({
       where: { id: admin.companyId },
       include: {
@@ -38,6 +38,11 @@ export default async function CompanyAdminPage() {
     db.employeeInvite.findMany({
       where: { companyId: admin.companyId, status: "PENDING" },
       orderBy: { createdAt: "desc" },
+    }),
+    db.companyAuditLog.findMany({
+      where: { companyId: admin.companyId },
+      orderBy: { createdAt: "desc" },
+      take: 10,
     }),
   ]);
 
@@ -127,6 +132,24 @@ export default async function CompanyAdminPage() {
       <div className="mt-8">
         <CompanyEmployees lang={lang} invites={invites} employees={employeeRows} />
       </div>
+
+      <p className="text-xs font-bold text-ink-400 mt-8 mb-3 uppercase tracking-wide">{tt.company.activityLog}</p>
+      {auditLog.length === 0 ? (
+        <p className="text-ink-400 text-sm">{tt.company.noActivity}</p>
+      ) : (
+        <div className="space-y-1.5">
+          {auditLog.map((a) => (
+            <div key={a.id} className="flex items-center gap-2 text-sm text-ink-500 flex-wrap">
+              <span className="font-semibold text-ink-700">{a.actorName}</span>
+              <span>{tt.company.activity[a.action as keyof typeof tt.company.activity] ?? a.action}</span>
+              {a.targetPhone && <span className="text-ink-400">{a.targetPhone}</span>}
+              <span className="text-xs text-ink-400 ml-auto">
+                {a.createdAt.toLocaleString(lang === "kk" ? "kk-KZ" : "ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

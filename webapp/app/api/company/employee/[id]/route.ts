@@ -15,5 +15,13 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
   }
 
   await db.user.update({ where: { id }, data: { companyId: null } });
+  await db.companyAuditLog.create({
+    data: {
+      companyId: admin.companyId!,
+      actorName: admin.name,
+      action: "employee_removed",
+      targetPhone: employee.phone,
+    },
+  });
   return NextResponse.json({ ok: true });
 }

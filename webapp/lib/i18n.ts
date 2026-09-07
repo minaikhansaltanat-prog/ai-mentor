@@ -258,6 +258,14 @@ export const dict = {
       cancelInvite: "Болдырмау",
       statusRegistered: "Тіркелді",
       removeEmployee: "Алып тастау",
+      exportCsv: "CSV экспорттау",
+      activityLog: "Соңғы әрекеттер",
+      noActivity: "Әзірге әрекет жоқ.",
+      activity: {
+        employee_invited: "шақырылды",
+        invite_cancelled: "шақыру болдырылмады",
+        employee_removed: "алып тасталды",
+      },
     },
     account: {
       title: "Аккаунт баптаулары",
@@ -610,6 +618,14 @@ export const dict = {
       cancelInvite: "Отменить",
       statusRegistered: "Зарегистрирован",
       removeEmployee: "Убрать",
+      exportCsv: "Экспорт в CSV",
+      activityLog: "Последние действия",
+      noActivity: "Пока нет действий.",
+      activity: {
+        employee_invited: "приглашён",
+        invite_cancelled: "приглашение отменено",
+        employee_removed: "убран",
+      },
     },
     account: {
       title: "Настройки аккаунта",

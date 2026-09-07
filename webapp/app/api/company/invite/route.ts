@@ -40,6 +40,14 @@ export async function POST(req: NextRequest) {
       await db.employeeInvite.create({
         data: { companyId: admin.companyId, phone: entry.phone, name: entry.name },
       });
+      await db.companyAuditLog.create({
+        data: {
+          companyId: admin.companyId,
+          actorName: admin.name,
+          action: "employee_invited",
+          targetPhone: entry.phone,
+        },
+      });
       created++;
     } catch {
       skipped++;

@@ -123,7 +123,17 @@ export default function CompanyEmployees({
       )}
 
       <div>
-        <p className="text-xs font-bold text-ink-400 mb-3 uppercase tracking-wide">{tt.company.employees}</p>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-bold text-ink-400 uppercase tracking-wide">{tt.company.employees}</p>
+          {employeeList.length > 0 && (
+            <a
+              href="/api/company/export/employees"
+              className="text-xs font-semibold text-gold-600 hover:underline"
+            >
+              {tt.company.exportCsv}
+            </a>
+          )}
+        </div>
         {employeeList.length === 0 ? (
           <p className="text-ink-400 text-sm">—</p>
         ) : (
