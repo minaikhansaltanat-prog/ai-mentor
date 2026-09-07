@@ -68,6 +68,7 @@ model CompanyAuditLog {
   actorName   String
   action      String
   targetPhone String?
+  meta        String?
   createdAt   DateTime @default(now())
 }
 

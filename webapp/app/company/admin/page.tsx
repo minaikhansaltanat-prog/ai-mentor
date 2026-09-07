@@ -3,6 +3,7 @@ import { getLang } from "@/lib/lang-server";
 import { t } from "@/lib/i18n";
 import { db } from "@/lib/db";
 import CompanyEmployees from "@/components/CompanyEmployees";
+import LicenseEditor from "@/components/LicenseEditor";
 
 const STATUS_LABEL_KEY: Record<string, "statusActive" | "statusTrial" | "statusSuspended" | "statusChurned"> = {
   ACTIVE: "statusActive",
@@ -99,6 +100,7 @@ export default async function CompanyAdminPage() {
             {usedLicenses}/{company.licenseCount}
           </p>
           <p className="text-[11px] text-ink-500">{tt.company.licenseUsage}</p>
+          <LicenseEditor lang={lang} licenseCount={company.licenseCount} />
         </div>
         <div className="card p-4 text-center">
           <p className="font-display font-bold text-2xl text-ink-900">{totalEmployees}</p>
@@ -143,6 +145,7 @@ export default async function CompanyAdminPage() {
               <span className="font-semibold text-ink-700">{a.actorName}</span>
               <span>{tt.company.activity[a.action as keyof typeof tt.company.activity] ?? a.action}</span>
               {a.targetPhone && <span className="text-ink-400">{a.targetPhone}</span>}
+              {a.meta && <span className="text-ink-400">{a.meta}</span>}
               <span className="text-xs text-ink-400 ml-auto">
                 {a.createdAt.toLocaleString(lang === "kk" ? "kk-KZ" : "ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
               </span>

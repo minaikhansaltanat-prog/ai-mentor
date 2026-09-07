@@ -68,6 +68,14 @@ export default function CompanyEmployees({
     setEmployeeList((list) => list.filter((e) => e.id !== id));
   }
 
+  async function onFilePicked(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const content = await file.text();
+    setText((prev) => (prev.trim() ? `${prev.trim()}\n${content.trim()}` : content.trim()));
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -79,8 +87,14 @@ export default function CompanyEmployees({
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
-          <div className="flex items-center justify-between gap-3 mt-3">
-            <p className="text-xs text-ink-400">{tt.company.inviteHint}</p>
+          <div className="flex items-center justify-between gap-3 mt-3 flex-wrap">
+            <div className="flex items-center gap-3">
+              <p className="text-xs text-ink-400">{tt.company.inviteHint}</p>
+              <label className="text-xs font-semibold text-gold-600 hover:underline cursor-pointer shrink-0">
+                {tt.company.uploadCsv}
+                <input type="file" accept=".csv,.txt" className="hidden" onChange={onFilePicked} />
+              </label>
+            </div>
             <button
               type="submit"
               disabled={busy === "invite"}
