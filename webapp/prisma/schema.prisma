@@ -60,6 +60,17 @@ model Company {
   employees       User[]
   invites         EmployeeInvite[]
   auditLogs       CompanyAuditLog[]
+  posts           CompanyPost[]
+}
+
+model CompanyPost {
+  id         String   @id @default(cuid())
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId  String
+  authorName String
+  title      String
+  body       String
+  createdAt  DateTime @default(now())
 }
 
 model CompanyAuditLog {

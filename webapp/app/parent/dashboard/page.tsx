@@ -9,6 +9,11 @@ export default async function ParentDashboardPage() {
   const lang = await getLang();
   const tt = t(lang);
 
+  const user = await db.user.findUniqueOrThrow({ where: { id: session.userId }, select: { companyId: true } });
+  const companyPosts = user.companyId
+    ? await db.companyPost.findMany({ where: { companyId: user.companyId }, orderBy: { createdAt: "desc" }, take: 5 })
+    : [];
+
   const allLinks = await db.parentLink.findMany({
     where: { parentId: session.userId },
     include: { child: true },
@@ -99,6 +104,28 @@ export default async function ParentDashboardPage() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {companyPosts.length > 0 && (
+        <div className="mt-8">
+          <p className="text-xs font-bold text-ink-400 mb-3 uppercase tracking-wide">{tt.parent.companyNews}</p>
+          <div className="space-y-2">
+            {companyPosts.map((p) => (
+              <div key={p.id} className="card p-4">
+                <p className="font-display font-bold text-ink-900">{p.title}</p>
+                <p className="text-sm text-ink-600 mt-1.5 whitespace-pre-wrap">{p.body}</p>
+                <p className="text-xs text-ink-400 mt-2">
+                  {p.createdAt.toLocaleString(lang === "kk" ? "kk-KZ" : "ru-RU", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

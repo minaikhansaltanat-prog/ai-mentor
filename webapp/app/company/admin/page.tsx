@@ -4,6 +4,7 @@ import { t } from "@/lib/i18n";
 import { db } from "@/lib/db";
 import CompanyEmployees from "@/components/CompanyEmployees";
 import LicenseEditor from "@/components/LicenseEditor";
+import CompanyBlog from "@/components/CompanyBlog";
 
 const STATUS_LABEL_KEY: Record<string, "statusActive" | "statusTrial" | "statusSuspended" | "statusChurned"> = {
   ACTIVE: "statusActive",
@@ -26,7 +27,7 @@ export default async function CompanyAdminPage() {
     );
   }
 
-  const [company, invites, auditLog] = await Promise.all([
+  const [company, invites, auditLog, posts] = await Promise.all([
     db.company.findUniqueOrThrow({
       where: { id: admin.companyId },
       include: {
@@ -44,6 +45,10 @@ export default async function CompanyAdminPage() {
       where: { companyId: admin.companyId },
       orderBy: { createdAt: "desc" },
       take: 10,
+    }),
+    db.companyPost.findMany({
+      where: { companyId: admin.companyId },
+      orderBy: { createdAt: "desc" },
     }),
   ]);
 
@@ -64,6 +69,8 @@ export default async function CompanyAdminPage() {
     const avg = values.length === 0 ? null : Math.round(values.reduce((s, v) => s + v, 0) / values.length);
     return { id: e.id, name: e.name, phone: e.phone, childCount: childIds.length, isActive: childIds.length > 0, avg };
   });
+
+  const postRows = posts.map((p) => ({ id: p.id, title: p.title, body: p.body, authorName: p.authorName, createdAt: p.createdAt.toISOString() }));
 
   const usedLicenses = employeeRows.filter((e) => e.isActive).length;
   const totalEmployees = employeeRows.length;
@@ -133,6 +140,10 @@ export default async function CompanyAdminPage() {
 
       <div className="mt-8">
         <CompanyEmployees lang={lang} invites={invites} employees={employeeRows} />
+      </div>
+
+      <div className="mt-8">
+        <CompanyBlog lang={lang} posts={postRows} />
       </div>
 
       <p className="text-xs font-bold text-ink-400 mt-8 mb-3 uppercase tracking-wide">{tt.company.activityLog}</p>
